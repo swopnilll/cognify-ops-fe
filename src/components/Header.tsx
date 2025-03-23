@@ -3,7 +3,7 @@ import Logo from "./ui/Logo";
 
 const Header = () => {
   return (
-    <header className="p-6 flex justify-between">
+    <header className="p-4 flex justify-between items-center bg-white shadow-neutral-400">
       <Logo src="/public/images/logo.jpeg" />
 
       <section>
