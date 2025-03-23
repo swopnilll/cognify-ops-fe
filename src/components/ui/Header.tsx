@@ -1,7 +1,9 @@
+import Logo from "./Logo";
+
 const Header = () => {
   return (
-    <header>
-      <h1>Header</h1>
+    <header className="p-4">
+      <Logo src="/public/images/logo.jpeg" />
     </header>
   );
 };
