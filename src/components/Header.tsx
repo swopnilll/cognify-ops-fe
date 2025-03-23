@@ -4,7 +4,7 @@ import Logo from "./ui/Logo";
 const Header = () => {
   return (
     <header className="p-4 flex justify-between items-center bg-white shadow-neutral-400">
-      <Logo src="/public/images/logo.jpeg" />
+      <Logo src="images/logo.jpeg" />
 
       <section>
         <CognigyButton
