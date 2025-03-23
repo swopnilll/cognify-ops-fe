@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "../hooks/useAuth";
-import Header from "../components/ui/Header";
+import Header from "../components/Header";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
