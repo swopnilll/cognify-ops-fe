@@ -4,6 +4,7 @@ export interface Task {
   title: string;
   description?: string;
   status: Status;
+  assignee: String;
 }
 
 export type Status = "todo" | "inprogress" | "done";

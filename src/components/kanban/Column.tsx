@@ -3,8 +3,8 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Task, Status } from "../types/kanban";
-import TaskCard from "./TaskCard";
+import { Task, Status } from "../../types/kanban";
+import TaskCard from "../TaskCard";
 
 interface Props {
   title: string;

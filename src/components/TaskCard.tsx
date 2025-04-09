@@ -24,19 +24,26 @@ const TaskCard: React.FC<Props> = ({ task }) => {
       {...attributes}
       {...listeners}
       style={style}
-      className="bg-white border rounded-md p-4 shadow-sm hover:shadow-md transition cursor-grab flex flex-col justify-between h-32"
+      className="bg-white border rounded-md p-4 shadow-sm hover:shadow-md transition cursor-grab flex flex-col justify-between h-36"
     >
       {/* Top section with title, edit and menu */}
       <div className="flex justify-between items-start">
-        <div className="flex items-center gap-2">
+        <div className="flex-1 pr-2">
           <p className="text-gray-800 font-medium text-sm">{task.title}</p>
-          <PencilIcon className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+          {task.description && (
+            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+              {task.description}
+            </p>
+          )}
         </div>
-        <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer" />
+        <div className="flex items-start gap-1">
+          <PencilIcon className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
+          <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer" />
+        </div>
       </div>
 
       {/* Bottom section with user icon */}
-      <div className="flex justify-end mt-4">
+      <div className="flex justify-end mt-3">
         <Avatar src="images/user.png" />
       </div>
     </div>

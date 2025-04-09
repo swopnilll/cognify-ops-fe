@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { DndContext, closestCorners, DragEndEvent } from "@dnd-kit/core";
 
-import { Status, Task } from "../types/kanban";
-import { useLocalStorage } from "../hooks/useLocalStorage";
+import { Status, Task } from "../../types/kanban";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 import Column from "./Column";
-import CreateTaskModal from "./CreateTasksModal";
-import Header from "./Header";
+import CreateTaskModal from "../CreateTasksModal";
+import Header from "../Header";
 
 import DroppableColumnWrapper from "./DroppableColumnWrapper";
 
-import CognifyButton from "./ui/CognigyButton";
-import SearchBox from "./ui/SearchBox";
-import AvatarGroup from "./ui/AvatarGroup";
+import CognifyButton from "../ui/CognigyButton";
+import SearchBox from "../ui/SearchBox";
+import AvatarGroup from "../ui/AvatarGroup";
 
 const statuses: { id: Status; title: string; color: string }[] = [
   { id: "todo", title: "TO DO", color: "bg-blue-600" },
@@ -51,7 +51,7 @@ const KanbanBoard: React.FC = () => {
   };
 
   //TODO: change this with api call
-  const handleCreateTask = (task: Omit<Task, "id">) => {
+  const handleCreateTask = (task: any) => {
     const newTask: Task = { ...task, id: lastId };
     setTasks([...tasks, newTask]);
     setLastId(lastId + 1);
@@ -59,9 +59,9 @@ const KanbanBoard: React.FC = () => {
 
   const teamMembers = [
     { id: 1, src: "/images/user.png", name: "Alice" },
-    { id: 2, src: "/images/user.png", name: "Bob" },
-    { id: 3, src: "/images/user.png", name: "Charlie" },
-    { id: 4, src: "/images/user.png", name: "Daisy" },
+    { id: 2, src: "/images/user1.png", name: "Bob" },
+    { id: 3, src: "/images/user2.png", name: "Charlie" },
+    { id: 4, src: "/images/user3.png", name: "Daisy" },
   ];
 
   const handleUserSelect = (user: any) => {
@@ -75,7 +75,7 @@ const KanbanBoard: React.FC = () => {
 
   return (
     <>
-      <Header />
+      <Header isauthenticated={true} />
       <div className="relative p-6">
         <div className="flex justify-between items-center mb-4 px-2">
           <h2 className="text-md">Project / Health Pro</h2>
@@ -122,6 +122,11 @@ const KanbanBoard: React.FC = () => {
           isOpen={isModalOpen}
           onClose={() => setModalOpen(false)}
           onCreate={handleCreateTask}
+          users={[
+            { id: 1, name: "Alice" },
+            { id: 2, name: "Bob" },
+          ]}
+          //TODO : add users from api call
         />
       </div>
     </>

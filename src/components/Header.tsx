@@ -1,12 +1,10 @@
-
 import { Link } from "@tanstack/react-router";
 import Logo from "./ui/Logo";
 import { useAuth } from "../hooks/useAuth";
 import UserDropdown from "./ui/UserDropdown";
 import AuthButtons from "./ui/AuthButtons";
 
-
-const Header = () => {
+const Header = (isauthenticated: any) => {
   const { user } = useAuth();
 
   return (
@@ -15,11 +13,7 @@ const Header = () => {
         <Logo src="images/logo.jpeg" />
       </Link>
 
-      {user ? (
-        <UserDropdown />
-      ) : (
-        <AuthButtons />
-      )}
+      {user || isauthenticated ? <UserDropdown /> : <AuthButtons />}
     </header>
   );
 };
