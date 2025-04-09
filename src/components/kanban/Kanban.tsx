@@ -75,7 +75,7 @@ const KanbanBoard: React.FC = () => {
 
   return (
     <>
-      <Header isauthenticated={true} />
+      <Header />
       <div className="relative p-6">
         <div className="flex justify-between items-center mb-4 px-2">
           <h2 className="text-md">Project / Health Pro</h2>

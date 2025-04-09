@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import Header from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import CognifyButton from "../components/ui/CognigyButton";
@@ -35,12 +35,14 @@ function Projects() {
             unparalleled clarity in your operations.
           </p>
         </div>
+        <Link to="/kanban">
         <CognifyButton
           label="Create Project"
           variant="outlined"
           customColor="#1868DB"
           textColor="white"
         />
+      </Link>
       </section>
     </>
   );

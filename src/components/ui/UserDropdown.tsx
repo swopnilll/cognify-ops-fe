@@ -41,7 +41,7 @@ const UserDropdown = () => {
       />
       {isDropdownOpen && (
         <div
-          className="absolute right-0 mt-2 p-3 bg-white border border-gray-300 rounded-lg shadow-md w-48"
+          className="absolute right-0 mt-2 p-3 bg-white border border-gray-300 rounded-lg shadow-md w-48 z-50"
           style={{
             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08)",
             borderRadius: "10px",

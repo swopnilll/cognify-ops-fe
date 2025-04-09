@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import UserDropdown from "./ui/UserDropdown";
 import AuthButtons from "./ui/AuthButtons";
 
-const Header = (isauthenticated: any) => {
+const Header = () => {
   const { user } = useAuth();
 
   return (
@@ -13,7 +13,7 @@ const Header = (isauthenticated: any) => {
         <Logo src="images/logo.jpeg" />
       </Link>
 
-      {user || isauthenticated ? <UserDropdown /> : <AuthButtons />}
+      {user ? <UserDropdown /> : <AuthButtons />}
     </header>
   );
 };
