@@ -15,7 +15,6 @@ import { Route as SignupImport } from './routes/signup'
 import { Route as LoginImport } from './routes/login'
 import { Route as IndexImport } from './routes/index'
 import { Route as ProjectsIndexImport } from './routes/projects/index'
-import { Route as ProjectsCreateImport } from './routes/projects/create'
 import { Route as ProjectsProjectIdImport } from './routes/projects/$projectId'
 
 // Create/Update Routes
@@ -41,12 +40,6 @@ const IndexRoute = IndexImport.update({
 const ProjectsIndexRoute = ProjectsIndexImport.update({
   id: '/projects/',
   path: '/projects/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ProjectsCreateRoute = ProjectsCreateImport.update({
-  id: '/projects/create',
-  path: '/projects/create',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -88,13 +81,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsProjectIdImport
       parentRoute: typeof rootRoute
     }
-    '/projects/create': {
-      id: '/projects/create'
-      path: '/projects/create'
-      fullPath: '/projects/create'
-      preLoaderRoute: typeof ProjectsCreateImport
-      parentRoute: typeof rootRoute
-    }
     '/projects/': {
       id: '/projects/'
       path: '/projects'
@@ -112,7 +98,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/projects/create': typeof ProjectsCreateRoute
   '/projects': typeof ProjectsIndexRoute
 }
 
@@ -121,7 +106,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/projects/create': typeof ProjectsCreateRoute
   '/projects': typeof ProjectsIndexRoute
 }
 
@@ -131,34 +115,20 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
-  '/projects/create': typeof ProjectsCreateRoute
   '/projects/': typeof ProjectsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/login'
-    | '/signup'
-    | '/projects/$projectId'
-    | '/projects/create'
-    | '/projects'
+  fullPaths: '/' | '/login' | '/signup' | '/projects/$projectId' | '/projects'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/login'
-    | '/signup'
-    | '/projects/$projectId'
-    | '/projects/create'
-    | '/projects'
+  to: '/' | '/login' | '/signup' | '/projects/$projectId' | '/projects'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/signup'
     | '/projects/$projectId'
-    | '/projects/create'
     | '/projects/'
   fileRoutesById: FileRoutesById
 }
@@ -168,7 +138,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
-  ProjectsCreateRoute: typeof ProjectsCreateRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
 }
 
@@ -177,7 +146,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
-  ProjectsCreateRoute: ProjectsCreateRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
 }
 
@@ -195,7 +163,6 @@ export const routeTree = rootRoute
         "/login",
         "/signup",
         "/projects/$projectId",
-        "/projects/create",
         "/projects/"
       ]
     },
@@ -210,9 +177,6 @@ export const routeTree = rootRoute
     },
     "/projects/$projectId": {
       "filePath": "projects/$projectId.tsx"
-    },
-    "/projects/create": {
-      "filePath": "projects/create.tsx"
     },
     "/projects/": {
       "filePath": "projects/index.tsx"
