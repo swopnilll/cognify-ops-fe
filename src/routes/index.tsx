@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "../hooks/useAuth";
 import Header from "../components/Header";
 
@@ -7,7 +7,12 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  useAuth();
+ const {user} = useAuth();
+ const navigate = useNavigate();
+
+ if(user){
+  navigate({ to: '/projects', replace: true });
+ }
 
   return (
     <>

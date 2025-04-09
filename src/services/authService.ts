@@ -1,32 +1,35 @@
-import { setAccessToken } from "../axios/tokenCRUD";
-
-const mockUsers = [{ id: 1, email: "user@example.com", password: "password" }];
+import axiosInstance from "../axios/axiosInstance";
+import { setAccessToken, clearAccessToken } from "../axios/tokenCRUD";
 
 interface LoginParams {
   email: string;
   password: string;
 }
 
-const mockLoginResponse = {
-  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9", // JWT for authorization
-  user: {
-    username: "john_doe",
-    role: "user",
-  },
-};
+export const login = async ({ email, password }: LoginParams) => {
+  try {
+    const response = await axiosInstance.post("/api/auth/login", { email, password });
 
-export const login = ({ email, password }: LoginParams) => {
-  const user = mockUsers.find(
-    (user) => user.email === email && user.password === password
-  );
+    const { access_token } = response.data;
 
-  if (!user) throw new Error("Invalid credentials");
+    if (!access_token) {
+      throw new Error("No access token received");
+    }
 
-  setAccessToken(mockLoginResponse.token);
+    // Store token
+    setAccessToken(access_token);
 
-  return mockLoginResponse.user;
+    // Return dummy user info (can be replaced with API call later)
+    return {
+      username: email.split("@")[0], // Just take part of email for now
+      role: "user", // Hardcoded role
+    };
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 };
 
 export const logout = () => {
-  setAccessToken("");
+  clearAccessToken();
 };
