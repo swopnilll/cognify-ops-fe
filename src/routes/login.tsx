@@ -13,8 +13,6 @@ function LoginComponent() {
   const { login, user } = useAuth();
 
   const navigate = useNavigate();
-
-  console.log({ user });
  
   if(user){
    navigate({ to: '/projects', replace: true });

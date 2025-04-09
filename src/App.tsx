@@ -6,6 +6,8 @@ import "./styles/index.css";
 
 import { routeTree } from "./routeTree.gen";
 import { AuthProvider } from "./contexts/AuthProvider";
+import { ToastContainer } from "react-toastify";
+import GlobalLoader from "./components/ui/GlobalLoader";
 
 const router = createRouter({ routeTree });
 
@@ -23,6 +25,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RouterProvider router={router} />
+        <GlobalLoader />
+        <ToastContainer />
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={true} />
     </QueryClientProvider>

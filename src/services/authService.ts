@@ -6,6 +6,11 @@ interface LoginParams {
   password: string;
 }
 
+interface SignUpParams {
+  email: string;
+  password: string;
+}
+
 export const login = async ({ email, password }: LoginParams) => {
   try {
     const response = await axiosInstance.post("/api/auth/login", { email, password });
@@ -29,6 +34,21 @@ export const login = async ({ email, password }: LoginParams) => {
     throw error;
   }
 };
+
+export const signUp = async ({ email, password }: SignUpParams) => {
+  try {
+    const response = await axiosInstance.post("/api/auth/signup", { email, password });
+
+    if(response.status === 201) {
+      return true;
+    }
+
+  } catch (error) {
+    console.error("Sign Up error:", error);
+    throw error;
+  }
+};
+
 
 export const logout = () => {
   clearAccessToken();
