@@ -9,11 +9,11 @@ import TaskCard from "../TaskCard";
 interface Props {
   title: string;
   color: string;
-  status: Status;
+  status?: Status;
   tasks: Task[];
 }
 
-const Column: React.FC<Props> = ({ title, color, status, tasks }) => {
+const Column: React.FC<Props> = ({ title, color, tasks }) => {
   return (
     <div className="flex-1 min-w-[250px] bg-gray-100 rounded-lg p-3">
       <div

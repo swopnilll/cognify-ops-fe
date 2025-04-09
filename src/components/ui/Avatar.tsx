@@ -14,7 +14,7 @@ const Avatar: React.FC<AvatarProps> = ({
   title,
   size = 32,
 }) => {
-  const sizeClass = `h-[${size}px] w-[${size}px]`;
+  // const sizeClass = `h-[${size}px] w-[${size}px]`;
 
   return (
     <div
