@@ -1,7 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import Header from "../components/Header";
 import { useAuth } from "../hooks/useAuth";
 import CognifyButton from "../components/ui/CognigyButton";
+import CreateProjectModal from "../components/project/CreateProject";
+
 
 export const Route = createFileRoute("/projects")({
   component: Projects,
@@ -9,10 +12,9 @@ export const Route = createFileRoute("/projects")({
 
 function Projects() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!user) {
-    navigate({ to: "/login", replace: true });
     return null;
   }
 
@@ -35,15 +37,17 @@ function Projects() {
             unparalleled clarity in your operations.
           </p>
         </div>
-        <Link to="/kanban">
+
         <CognifyButton
           label="Create Project"
           variant="outlined"
           customColor="#1868DB"
           textColor="white"
+          onClick={() => setIsModalOpen(true)}
         />
-      </Link>
       </section>
+
+      <CreateProjectModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </>
   );
 }
