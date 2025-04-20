@@ -2,11 +2,14 @@
 import { FaUser } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuthV2";
+
+import { useMutation } from "@tanstack/react-query";
+import { logout } from "../../services/authService";
 
 const UserDropdown = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { logout } = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
 
   // Toggle dropdown visibility
@@ -14,9 +17,21 @@ const UserDropdown = () => {
     setIsDropdownOpen((prevState) => !prevState);
   };
 
+  const mutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      auth.signOut();
+      navigate({ to: "/", replace: true });
+    },
+    onError: (error: any) => {
+      console.error("Logout error:", error);
+    }
+  });
+
   // Logout handler
   const handleLogout = () => {
-    logout();
+    mutation.mutate();
+    setIsDropdownOpen(false);
     navigate({ to: "/", replace: true });
   };
 

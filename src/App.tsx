@@ -1,30 +1,31 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { RouterProvider } from "@tanstack/react-router";
 
-import "./styles/index.css";
 
-import { routeTree } from "./routeTree.gen";
-import { AuthProvider } from "./contexts/AuthProvider";
 import { ToastContainer } from "react-toastify";
 import GlobalLoader from "./components/ui/GlobalLoader";
 
-const router = createRouter({ routeTree });
+import queryClient from "./queryClient";
 
-// Registering the router instance for type safety
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-  }
+import { router } from './router'; // Import the router instance
+import { useAuth } from "./hooks/useAuthV2";
+
+import "./styles/index.css";
+import { AuthProvider } from "./providers/AuthProviderV2";
+
+// Inner component to access context hooks before passing to RouterProvider
+function AppProviders() {
+  const auth = useAuth(); 
+
+  return <RouterProvider router={router} context={{ auth, queryClient }} />;
 }
-
-const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RouterProvider router={router} />
+        <AppProviders />
         <GlobalLoader />
         <ToastContainer />
       </AuthProvider>

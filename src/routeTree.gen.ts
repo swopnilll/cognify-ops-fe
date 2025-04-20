@@ -10,142 +10,176 @@
 
 // Import Routes
 
-import { Route as rootRoute } from "./routes/__root";
-import { Route as SignupImport } from "./routes/signup";
-import { Route as ProjectsImport } from "./routes/projects";
-import { Route as LoginImport } from "./routes/login";
-import { Route as KanbanImport } from "./routes/kanban";
-import { Route as IndexImport } from "./routes/index";
+import { Route as rootRoute } from './routes/__root'
+import { Route as SignupImport } from './routes/signup'
+import { Route as LoginImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
+import { Route as IndexImport } from './routes/index'
+import { Route as AuthenticatedProjectsImport } from './routes/_authenticated/projects'
+import { Route as AuthenticatedKanbanImport } from './routes/_authenticated/kanban'
 
 // Create/Update Routes
 
 const SignupRoute = SignupImport.update({
-  id: "/signup",
-  path: "/signup",
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRoute,
-} as any);
-
-const ProjectsRoute = ProjectsImport.update({
-  id: "/projects",
-  path: "/projects",
-  getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const LoginRoute = LoginImport.update({
-  id: "/login",
-  path: "/login",
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
-const KanbanRoute = KanbanImport.update({
-  id: "/kanban",
-  path: "/kanban",
+const AuthenticatedRouteRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
 
 const IndexRoute = IndexImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRoute,
-} as any);
+} as any)
+
+const AuthenticatedProjectsRoute = AuthenticatedProjectsImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+
+const AuthenticatedKanbanRoute = AuthenticatedKanbanImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/kanban": {
-      id: "/kanban";
-      path: "/kanban";
-      fullPath: "/kanban";
-      preLoaderRoute: typeof KanbanImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/login": {
-      id: "/login";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof LoginImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/projects": {
-      id: "/projects";
-      path: "/projects";
-      fullPath: "/projects";
-      preLoaderRoute: typeof ProjectsImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/signup": {
-      id: "/signup";
-      path: "/signup";
-      fullPath: "/signup";
-      preLoaderRoute: typeof SignupImport;
-      parentRoute: typeof rootRoute;
-    };
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRoute
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginImport
+      parentRoute: typeof rootRoute
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupImport
+      parentRoute: typeof rootRoute
+    }
+    '/_authenticated/kanban': {
+      id: '/_authenticated/kanban'
+      path: '/kanban'
+      fullPath: '/kanban'
+      preLoaderRoute: typeof AuthenticatedKanbanImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsImport
+      parentRoute: typeof AuthenticatedRouteImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedKanbanRoute: typeof AuthenticatedKanbanRoute
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedKanbanRoute: AuthenticatedKanbanRoute,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/kanban": typeof KanbanRoute;
-  "/login": typeof LoginRoute;
-  "/projects": typeof ProjectsRoute;
-  "/signup": typeof SignupRoute;
+  '/': typeof IndexRoute
+  '': typeof AuthenticatedRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
+  '/projects': typeof AuthenticatedProjectsRoute
 }
 
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/kanban": typeof KanbanRoute;
-  "/login": typeof LoginRoute;
-  "/projects": typeof ProjectsRoute;
-  "/signup": typeof SignupRoute;
+  '/': typeof IndexRoute
+  '': typeof AuthenticatedRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/kanban': typeof AuthenticatedKanbanRoute
+  '/projects': typeof AuthenticatedProjectsRoute
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  "/": typeof IndexRoute;
-  "/kanban": typeof KanbanRoute;
-  "/login": typeof LoginRoute;
-  "/projects": typeof ProjectsRoute;
-  "/signup": typeof SignupRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/_authenticated/kanban': typeof AuthenticatedKanbanRoute
+  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/kanban" | "/login" | "/projects" | "/signup";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/kanban" | "/login" | "/projects" | "/signup";
-  id: "__root__" | "/" | "/kanban" | "/login" | "/projects" | "/signup";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '' | '/login' | '/signup' | '/kanban' | '/projects'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '' | '/login' | '/signup' | '/kanban' | '/projects'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/signup'
+    | '/_authenticated/kanban'
+    | '/_authenticated/projects'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  KanbanRoute: typeof KanbanRoute;
-  LoginRoute: typeof LoginRoute;
-  ProjectsRoute: typeof ProjectsRoute;
-  SignupRoute: typeof SignupRoute;
+  IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  KanbanRoute: KanbanRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  ProjectsRoute: ProjectsRoute,
   SignupRoute: SignupRoute,
-};
+}
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
@@ -154,26 +188,34 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/kanban",
+        "/_authenticated",
         "/login",
-        "/projects",
         "/signup"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/kanban": {
-      "filePath": "kanban.tsx"
+    "/_authenticated": {
+      "filePath": "_authenticated/route.tsx",
+      "children": [
+        "/_authenticated/kanban",
+        "/_authenticated/projects"
+      ]
     },
     "/login": {
       "filePath": "login.tsx"
     },
-    "/projects": {
-      "filePath": "projects.tsx"
-    },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/_authenticated/kanban": {
+      "filePath": "_authenticated/kanban.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/projects": {
+      "filePath": "_authenticated/projects.tsx",
+      "parent": "/_authenticated"
     }
   }
 }

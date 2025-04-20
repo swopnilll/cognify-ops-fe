@@ -1,12 +1,12 @@
 import { ClipLoader } from "react-spinners";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuthV2";
 
 const GlobalLoader = () => {
 
-  const {loading} = useAuth();
+  const {isLoading} = useAuth();
 
 
-  if (!loading) return null;
+  if (!isLoading) return null;
 
   return (
     <div
@@ -23,7 +23,7 @@ const GlobalLoader = () => {
         zIndex: 9999,
       }}
     >
-      <ClipLoader color="#00BFFF" loading={loading} size={100} />
+      <ClipLoader color="#00BFFF" loading={isLoading} size={100} />
     </div>
   );
 };
