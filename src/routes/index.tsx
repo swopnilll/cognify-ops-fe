@@ -1,23 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "../hooks/useAuth";
-import Header from "../components/Header";
+import { createFileRoute } from "@tanstack/react-router";
+
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
 function HomePage() {
- const {user} = useAuth();
- const navigate = useNavigate();
-
- if(user){
-  navigate({ to: '/projects', replace: true });
- }
-
   return (
-    <>
-      <Header />
-      <main className="w-full p-8 bg-gradient-to-b from-blue-100 to-blue-500 min-h-[calc(100vh-5rem)] flex items-center justify-between">
+      <section className="w-full p-8 bg-gradient-to-b from-blue-100 to-blue-500 min-h-[calc(100vh-5rem)] flex items-center justify-between">
         {/* Left Content Section */}
         <section className="max-w-2xl">
           <h1 className="text-4xl font-extrabold text-gray-900 leading-tight">
@@ -41,8 +31,7 @@ function HomePage() {
             className="w-full h-auto object-cover"
           />
         </section>
-      </main>
-    </>
+      </section>
   );
 }
 

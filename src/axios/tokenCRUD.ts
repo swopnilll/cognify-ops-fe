@@ -2,8 +2,6 @@ import { InternalAxiosRequestConfig } from "axios";
 
 import { ACCESS_TOKEN_KEY } from "./config";
 
-// TODO : Replace with Cookie based authentication
-
 // Function to get access token from localStorage
 export const getAccessToken = (): string | null => {
   return localStorage.getItem(ACCESS_TOKEN_KEY);

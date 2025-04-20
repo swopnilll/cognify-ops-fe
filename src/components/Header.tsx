@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import Logo from "./ui/Logo";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuthV2";
 import UserDropdown from "./ui/UserDropdown";
 import AuthButtons from "./ui/AuthButtons";
 
 const Header = () => {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+  console.log("Header isAuthenticated:", isAuthenticated);
 
   return (
     <header className="p-4 flex justify-between items-center bg-white shadow-lg">
@@ -13,7 +15,7 @@ const Header = () => {
         <Logo src="images/logo.jpeg" />
       </Link>
 
-      {user ? <UserDropdown /> : <AuthButtons />}
+      {isAuthenticated ? <UserDropdown /> : < AuthButtons/>}
     </header>
   );
 };

@@ -15,7 +15,7 @@ export const login = async ({ email, password }: LoginParams) => {
   try {
     const response = await axiosInstance.post("/api/auth/login", { email, password });
 
-    const { access_token } = response.data;
+    const access_token  = response.data.accessToken;
 
     if (!access_token) {
       throw new Error("No access token received");
@@ -26,8 +26,12 @@ export const login = async ({ email, password }: LoginParams) => {
 
     // Return dummy user info (can be replaced with API call later)
     return {
-      username: email.split("@")[0], // Just take part of email for now
-      role: "user", // Hardcoded role
+      user: {
+        id: response.data.user.sub,
+        email: response.data.user.email,
+        nickname: response.data.user.nickname,
+        picture: response.data.user.picture,
+      }
     };
   } catch (error) {
     console.error("Login error:", error);
@@ -50,6 +54,6 @@ export const signUp = async ({ email, password }: SignUpParams) => {
 };
 
 
-export const logout = () => {
-  clearAccessToken();
+export const logout = async() => {
+  await clearAccessToken();
 };

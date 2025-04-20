@@ -74,8 +74,6 @@ const KanbanBoard: React.FC = () => {
   };
 
   return (
-    <>
-      <Header />
       <div className="relative p-6">
         <div className="flex justify-between items-center mb-4 px-2">
           <h2 className="text-md">Project / Health Pro</h2>
@@ -129,7 +127,6 @@ const KanbanBoard: React.FC = () => {
           //TODO : add users from api call
         />
       </div>
-    </>
   );
 };
 

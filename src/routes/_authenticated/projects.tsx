@@ -1,26 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import Header from "../components/Header";
-import { useAuth } from "../hooks/useAuth";
-import CognifyButton from "../components/ui/CognigyButton";
-import CreateProjectModal from "../components/project/CreateProject";
+import CognifyButton from "../../components/ui/CognigyButton";
+import CreateProjectModal from "../../components/project/CreateProject";
 
 
-export const Route = createFileRoute("/projects")({
+
+export const Route = createFileRoute("/_authenticated/projects")({
   component: Projects,
 });
 
 function Projects() {
-  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <>
-      <Header />
       <section className="flex flex-col items-center justify-center w-full h-[calc(100vh-80px)] gap-6 p-4">
         <img
           src="images/projects-logo.svg"
