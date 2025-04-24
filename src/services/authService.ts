@@ -1,5 +1,5 @@
 import axiosInstance from "../axios/axiosInstance";
-import { setAccessToken, clearAccessToken } from "../axios/tokenCRUD";
+import { setAccessToken, clearAccessToken, setUserDetails } from "../axios/tokenCRUD";
 
 interface LoginParams {
   email: string;
@@ -23,6 +23,13 @@ export const login = async ({ email, password }: LoginParams) => {
 
     // Store token
     setAccessToken(access_token);
+
+    setUserDetails({
+      id: response.data.user.sub,
+      email: response.data.user.email,
+      nickname: response.data.user.nickname,
+      picture: response.data.user.picture,
+    });
 
     // Return dummy user info (can be replaced with API call later)
     return {
@@ -57,3 +64,14 @@ export const signUp = async ({ email, password }: SignUpParams) => {
 export const logout = async() => {
   await clearAccessToken();
 };
+
+// TODO: Replace with actual token validation logic (Refresh token)
+export const checkIfTokenIsValid = () => {
+  const token = localStorage.getItem("access_token");
+
+  if (token && token.length > 0) {
+    return true;
+  }
+
+  return false;
+}

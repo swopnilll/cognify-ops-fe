@@ -13,6 +13,7 @@ interface AuthenticatedRouteContext {
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: ({context, location}: {context: AuthenticatedRouteContext, location: ParsedLocation}) => {
+    
     console.log('Checking auth in _authenticated beforeLoad:', context.auth.isAuthenticated);
 
     if (!context.auth.isAuthenticated) {

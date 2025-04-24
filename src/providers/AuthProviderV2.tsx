@@ -1,21 +1,22 @@
 // src/providers/AuthProviderV2.tsx
 
-import  {
+import {
   createContext,
   useState,
   useCallback,
   useMemo,
   useEffect,
-  ReactNode
+  ReactNode,
 } from "react";
 import { router } from "../router";
-
+import { checkIfTokenIsValid } from "../services/authService";
+import { getUserDetails } from "../axios/tokenCRUD";
 
 interface User {
   id: string;
   email: string;
   nickname: string;
-  picture: string
+  picture: string;
 }
 
 interface AuthState {
@@ -46,16 +47,36 @@ export const AuthContext = createContext<AuthContextValue | undefined>(
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>(initialState);
 
-  // Function to check auth status on initial load
   const checkAuthStatus = useCallback(async () => {
     setAuthState((prev) => ({ ...prev, isLoading: true }));
 
     try {
-      setAuthState((prev) => ({
-        ...prev,
-        isAuthenticated: false,
-        isLoading: false,
-      }));
+      const authValidState = await checkIfTokenIsValid();
+
+      if (!authValidState) {
+        setAuthState({
+          ...initialState,
+          isLoading: false,
+        });
+        return;
+      }
+
+      const user = await getUserDetails();
+
+      if (user) {
+        setAuthState({
+          isAuthenticated: true,
+          user,
+          isLoading: false,
+          error: null,
+        });
+      } else {
+        setAuthState({
+          ...initialState,
+          isLoading: false,
+          error: "User details not found",
+        });
+      }
     } catch (error) {
       console.error("Auth check failed:", error);
       setAuthState({
@@ -72,7 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(
     async (authData: { user: User }) => {
-
       console.log("Sign in attempt with:", authData);
 
       setAuthState({
@@ -89,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
-    setAuthState({...initialState, isLoading: false }); // Reset state
+    setAuthState({ ...initialState, isLoading: false }); // Reset state
 
     // Invalidate router state AFTER context update
     await router.invalidate();
@@ -109,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       signUp,
-      checkAuthStatus
+      checkAuthStatus,
     }),
     [authState, signIn, signOut, signUp]
   );

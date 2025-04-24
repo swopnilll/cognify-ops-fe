@@ -1,9 +1,15 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+
+import { useMutation } from "@tanstack/react-query";
+
 import CognifyInput from "../ui/CognifyInput";
 import CognifyButton from "../ui/CognigyButton";
-import React from "react";
-import { Link } from "@tanstack/react-router";
+import React, { useState } from "react";
+
+import { createProject } from "../../services/projectService";
+import { useAuth } from "../../hooks/useAuthV2";
+import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
@@ -11,6 +17,45 @@ interface Props {
 }
 
 const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange }) => {
+  const { user: authUser } = useAuth();
+
+  const [name, setName] = useState("");
+  const [key, setKey] = useState("");
+
+  const [errors, setErrors] = useState<{ name?: string; key?: string }>({});
+
+  const mutation = useMutation({
+    mutationFn: createProject,
+    onSuccess: (data) => {
+      console.log("Project created successfully:", data);
+      toast.success("Project created successfully!");
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      console.error("Error creating project:", error);
+    },
+  });
+
+  const handleSubmit = () => {
+    const validationErrors: { name?: string; key?: string } = {};
+    if (!name.trim()) validationErrors.name = "Project name is required";
+    if (!key.trim()) validationErrors.key = "Project key is required";
+
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      if (authUser) {
+        mutation.mutate({
+          userId: authUser.id,
+          name,
+          project_key: key,
+        });
+      } else {
+        console.error("User is not authenticated");
+      }
+    }
+  };
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -33,8 +78,20 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange }) => {
 
           <div className="flex flex-1 gap-6">
             <div className="flex flex-col gap-4 w-2/3 justify-center items-center">
-              <CognifyInput label="Name of the project" required />
-              <CognifyInput label="Key" required />
+              <CognifyInput
+                label="Name of the project"
+                value={name}
+                onChange={setName}
+                required
+                error={errors.name}
+              />
+              <CognifyInput
+                label="Key"
+                value={key}
+                onChange={setKey}
+                required
+                error={errors.name}
+              />
             </div>
 
             <div className="flex flex-col items-center justify-center w-1/3">
@@ -48,15 +105,13 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange }) => {
           </div>
 
           <div className="mt-6 flex justify-end">
-            <Link to="/kanban">
-            
             <CognifyButton
               variant="outlined"
               customColor="#1868DB"
               textColor="white"
               label="Create Project"
+              onClick={handleSubmit}
             />
-            </Link>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

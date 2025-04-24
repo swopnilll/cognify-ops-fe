@@ -12,6 +12,16 @@ export const setAccessToken = (token: string) => {
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
 };
 
+// TODO: Replace with actual token validation logic (Refresh token)
+export const setUserDetails = (user: any) => {
+  localStorage.setItem("user", JSON.stringify(user));
+};
+
+export const getUserDetails = () => {
+  const user = localStorage.getItem("user");
+  return user ? JSON.parse(user) : null;
+};
+
 // Function to clear access token on logout
 export const clearAccessToken = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
