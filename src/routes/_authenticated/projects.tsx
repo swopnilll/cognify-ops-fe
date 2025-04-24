@@ -18,7 +18,7 @@ function Projects() {
 
   const [projects, setProjects] = useState<any[]>([]);
 
-  const {user: authUser} = useAuth();
+  const { user: authUser } = useAuth();
 
   const mutation = useMutation({
     mutationFn: fetchProjectsForUser,
@@ -31,13 +31,15 @@ function Projects() {
     },
   });
 
-  useEffect(() => {
+  const fetchProjects = () => {
     if (authUser) {
       mutation.mutate(authUser.id);
-    } else {
-      console.error("User is not authenticated");
     }
-  }, [])
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
   return (
     <>
@@ -75,7 +77,7 @@ function Projects() {
         </section>
       </section>
 
-      <CreateProjectModal open={isModalOpen} onOpenChange={setIsModalOpen} />
+      <CreateProjectModal open={isModalOpen} onOpenChange={setIsModalOpen} onProjectCreated={fetchProjects} />
     </>
   );
 }

@@ -13,7 +13,6 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignUpComponent() {
-  
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -30,9 +29,11 @@ function SignUpComponent() {
     confirmPassword: "",
   });
 
+  const [submitError, setSubmitError] = useState("");
+
   const mutation = useMutation({
     mutationFn: signUp,
-    onSuccess: (data) => {  
+    onSuccess: (data) => {
       console.log("Sign Up successful:", data);
       setErrors({
         fullName: "",
@@ -43,14 +44,16 @@ function SignUpComponent() {
 
       toast.success("Sign Up successful! Please log in.");
 
-      navigate({to: "/login", replace: true});
+      navigate({ to: "/login", replace: true });
     },
     onError: (error: any) => {
       console.error("Sign Up error:", error);
+      setSubmitError(error.response.data.error || "Login failed");
     },
-  })
+  });
 
   const handleChange = (field: string, value: string) => {
+    setSubmitError("");
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
@@ -73,7 +76,6 @@ function SignUpComponent() {
         email: form.email,
         password: form.password,
       });
-      
     }
   };
 
@@ -117,6 +119,8 @@ function SignUpComponent() {
         error={errors.confirmPassword}
         required
       />
+
+      {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
 
       <CognigyButton
         label="Sign Up"

@@ -14,9 +14,10 @@ import { toast } from "react-toastify";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onProjectCreated: () => void;
 }
 
-const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange }) => {
+const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange, onProjectCreated }) => {
   const { user: authUser } = useAuth();
 
   const [name, setName] = useState("");
@@ -30,6 +31,7 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange }) => {
       console.log("Project created successfully:", data);
       toast.success("Project created successfully!");
       onOpenChange(false);
+      onProjectCreated();
     },
     onError: (error: any) => {
       console.error("Error creating project:", error);

@@ -43,7 +43,7 @@ function LoginComponent() {
     },
     onError: (error: any) => {
       console.error("Login error:", error);
-      setSubmitError(error.message || "Login failed");
+      setSubmitError(error.response.data.error || "Login failed");
     },
   });
 
