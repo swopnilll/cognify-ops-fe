@@ -9,6 +9,19 @@ function ProjectLayout(): React.JSX.Element {
   const { projectId } = Route.useParams();
   const [isNavCollapsed, setIsNavCollapsed] = React.useState(false);
 
+  const [project, setProject] = React.useState({
+    name: "Cognify Ops",
+    description: "Software Project",
+  });
+
+  // TODO: Remove This
+  React.useEffect(() => {
+    setProject({
+      name: "Cognify Ops",
+      description: "Software Project",
+    })
+  }, [])
+
   return (
     <div className="relative flex h-[calc(100vh-80px)]">
       {/* Sidebar */}
@@ -18,36 +31,79 @@ function ProjectLayout(): React.JSX.Element {
         }`}
       >
         {!isNavCollapsed && (
-          <nav className="mt-8 flex flex-col gap-2">
-            <h3 className="text-lg font-semibold">Project: {projectId}</h3>
-            <Link
-              to="/project/$projectId"
-              params={{ projectId }}
-              preload="intent"
-              activeProps={{ className: "font-bold text-blue-600" }}
-              className="hover:underline"
-            >
-              Overview
-            </Link>
-            <Link
-              to="/project/$projectId/kanbanView"
-              params={{ projectId }}
-              preload="intent"
-              activeProps={{ className: "font-bold text-blue-600" }}
-              className="hover:underline"
-            >
-              Kanban Board
-            </Link>
-            <Link
-              to="/project/$projectId/ai-portal"
-              params={{ projectId }}
-              preload="intent"
-              activeProps={{ className: "font-bold text-blue-600" }}
-              className="hover:underline"
-            >
-              AI Portal
-            </Link>
+          <>
+            <div className="flex gap-2 mt-4">
+              <img
+                src="/images/project-icon.png"
+                alt="Project Icon"
+                className="w-8"
+              />
+              <div>
+                <p className="text-sm">{project.name}</p>
+                <p className="text-xs">{project.description}</p>
+              </div>
+            </div>
+            <nav className="mt-18 flex flex-col gap-4">
+              <h2 className="text-lg text-[#5B6274] font-bold mb-6">
+                PLANNING
+              </h2>
+
+              <Link
+                to="/project/$projectId/kanbanView"
+                params={{ projectId }}
+                preload="intent"
+                activeProps={{
+                  className: "bg-[#F2F7FF] font-bold text-blue-600",
+                }}
+                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
+              >
+                <img
+                  src="/images/kanban-board-icon.png"
+                  alt="Board Icon"
+                  className="w-8 h-8"
+                />
+                <p className="text-center">Board</p>
+              </Link>
+
+              <Link
+                to="/project/$projectId"
+                params={{ projectId }}
+                preload="intent"
+                activeProps={{
+                  className: "bg-[#F2F7FF] font-bold text-blue-600",
+                }}
+                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
+              >
+                <img
+                  src="/images/list-icon.png"
+                  alt="Board Icon"
+                  className="w-8 h-8"
+                />
+                <p className="text-center">List</p>
+              </Link>
+
+              <div className="mt-16 mb-8">
+                <hr />
+              </div>
+
+              <Link
+                to="/project/$projectId/ai-portal"
+                params={{ projectId }}
+                preload="intent"
+                activeProps={{
+                  className: "bg-[#F2F7FF] font-bold text-blue-600",
+                }}
+                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
+              >
+                <img
+                  src="/images/intellecta-logo.png"
+                  alt="Ai Logo Icon"
+                  className="w-8 h-8"
+                />
+                <p className="text-center">List</p>
+              </Link>
           </nav>
+          </>
         )}
       </div>
 

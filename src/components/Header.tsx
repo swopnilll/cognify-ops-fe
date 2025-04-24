@@ -11,11 +11,15 @@ const Header = () => {
 
   return (
     <header className="p-4 flex justify-between items-center bg-white shadow-lg">
-      <Link to="/">
-        <Logo src="images/logo.jpeg" />
+      <Link to="/" className="flex gap-3 items-center">
+        <Logo src="images/main-logo.png" />
+        <div className="flex flex-col text-[#1868DB]">
+          <p className="text-2xl font-bold">Cognify Ops</p>
+          <p className="text-xs pl-1 font-normal">THINK BEYOND TASKS</p>
+        </div>
       </Link>
 
-      {isAuthenticated ? <UserDropdown /> : < AuthButtons/>}
+      {isAuthenticated ? <UserDropdown /> : <AuthButtons />}
     </header>
   );
 };

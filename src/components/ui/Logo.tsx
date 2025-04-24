@@ -11,7 +11,7 @@ const Logo: React.FC<LogoProps> = ({
   alt = "Company Logo",
   className,
 }) => {
-  return <img src={src} alt={alt} className={`h-12 w-auto ${className}`} />;
+  return <img src={src} alt={alt} className={`h-16 w-auto ${className}`} />;
 };
 
 export default Logo;
