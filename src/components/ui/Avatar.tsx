@@ -6,19 +6,20 @@ interface AvatarProps {
   alt?: string;
   size?: number; // pixel size
   title?: string;
+  className?: string; // optional styling override
 }
 
 const Avatar: React.FC<AvatarProps> = ({
   src,
   alt = "User Avatar",
-  title,
   size = 32,
+  title = "",
+  className = "",
 }) => {
-  // const sizeClass = `h-[${size}px] w-[${size}px]`;
-
   return (
     <div
-      className={`rounded-full overflow-hidden bg-gray-200 flex items-center justify-center`}
+      title={title}
+      className={`rounded-full overflow-hidden bg-gray-100 border border-gray-300 flex items-center justify-center shadow-sm ${className}`}
       style={{ width: size, height: size }}
     >
       {src ? (
@@ -26,12 +27,11 @@ const Avatar: React.FC<AvatarProps> = ({
           src={src}
           alt={alt}
           className="w-full h-full object-cover"
-          title={title}
         />
       ) : (
         <UserCircleIcon
-          className="text-gray-500"
-          style={{ width: size, height: size }}
+          className="text-gray-400"
+          style={{ width: size * 0.8, height: size * 0.8 }}
         />
       )}
     </div>

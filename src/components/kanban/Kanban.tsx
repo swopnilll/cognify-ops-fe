@@ -6,7 +6,6 @@ import { useLocalStorage } from "../../hooks/useLocalStorage";
 import Column from "./Column";
 import CreateTaskModal from "../CreateTasksModal";
 
-
 import DroppableColumnWrapper from "./DroppableColumnWrapper";
 
 import CognifyButton from "../ui/CognigyButton";
@@ -78,7 +77,7 @@ const KanbanBoard: React.FC = () => {
         <div className="flex justify-between items-center mb-4 px-2">
           <h2 className="text-md">Project / Health Pro</h2>
           <CognifyButton
-            label="+ Create New Task"
+            label="Create New Task"
             variant="outlined"
             customColor="blue"
             textColor="white"

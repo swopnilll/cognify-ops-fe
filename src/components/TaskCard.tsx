@@ -24,27 +24,29 @@ const TaskCard: React.FC<Props> = ({ task }) => {
       {...attributes}
       {...listeners}
       style={style}
-      className="bg-white border rounded-md p-4 shadow-sm hover:shadow-md transition cursor-grab flex flex-col justify-between h-36"
+      className="bg-white/70 hover:bg-white/90 transition-colors backdrop-blur-sm border border-gray-200 shadow-md hover:shadow-xl rounded-xl p-4 cursor-grab flex flex-col justify-between h-36"
     >
-      {/* Top section with title, edit and menu */}
+      {/* Title & Icons */}
       <div className="flex justify-between items-start">
         <div className="flex-1 pr-2">
-          <p className="text-gray-800 font-medium text-sm">{task.title}</p>
+          <p className="text-gray-900 font-semibold text-sm truncate">
+            {task.title}
+          </p>
           {task.description && (
-            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
               {task.description}
             </p>
           )}
         </div>
-        <div className="flex items-start gap-1">
-          <PencilIcon className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer" />
-          <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer" />
+        <div className="flex items-start gap-2">
+          <PencilIcon className="h-4 w-4 text-gray-500 hover:text-gray-700 cursor-pointer transition" />
+          <EllipsisVerticalIcon className="h-5 w-5 text-gray-400 hover:text-gray-600 cursor-pointer transition" />
         </div>
       </div>
 
-      {/* Bottom section with user icon */}
+      {/* Avatar */}
       <div className="flex justify-end mt-3">
-        <Avatar src="images/user.png" />
+        <Avatar src="images/user.png" className="h-6 w-6 ring-2 ring-white" /> {/* Now className is part of AvatarProps */}
       </div>
     </div>
   );
