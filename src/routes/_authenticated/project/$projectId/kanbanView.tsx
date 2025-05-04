@@ -8,5 +8,7 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  return <KanbanBoard />
+   const { projectId } = Route.useParams();
+
+  return <KanbanBoard projectId={Number(projectId)} />
 }

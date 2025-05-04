@@ -1,37 +1,54 @@
-import React from 'react';
-import { FormControl, InputLabel, Select, MenuItem, FormHelperText } from '@mui/material';
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+  SelectChangeEvent
+} from '@mui/material';
 
-interface CognifySelectProps {
+interface CognifySelectProps<T extends string | number> {
   label?: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  options: { label: string; value: string }[];
+  value?: T;
+  onChange?: (value: T) => void;
+  options: { label: string; value: T }[];
   error?: string;
   required?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
 }
 
-const CognifySelect: React.FC<CognifySelectProps> = ({
+function CognifySelect<T extends string | number>({
   label = 'Select',
-  value = '',
+  value,
   onChange,
   options,
   error,
   required = false,
   disabled = false,
-  fullWidth = true,
-}) => {
+  fullWidth = true
+}: CognifySelectProps<T>) {
   const id = `cognify-select-${label.replace(/\s+/g, '-').toLowerCase()}`;
 
+  const handleChange = (event: SelectChangeEvent<unknown>) => {
+    const selectedValue = event.target.value as T;
+    onChange?.(selectedValue);
+  };
+
   return (
-    <FormControl fullWidth={fullWidth} required={required} disabled={disabled} error={!!error} size="small">
+    <FormControl
+      fullWidth={fullWidth}
+      required={required}
+      disabled={disabled}
+      error={!!error}
+      size="small"
+    >
       <InputLabel id={`${id}-label`}>{label}</InputLabel>
       <Select
         labelId={`${id}-label`}
         id={id}
-        value={value}
-        onChange={(e) => onChange?.(e.target.value)}
+        value={value as any}
+        onChange={handleChange}
         label={label}
       >
         {options.map((option) => (
@@ -43,6 +60,6 @@ const CognifySelect: React.FC<CognifySelectProps> = ({
       {error && <FormHelperText>{error}</FormHelperText>}
     </FormControl>
   );
-};
+}
 
 export default CognifySelect;

@@ -75,6 +75,7 @@ function SignUpComponent() {
       mutation.mutate({
         email: form.email,
         password: form.password,
+        fullName: form.fullName
       });
     }
   };

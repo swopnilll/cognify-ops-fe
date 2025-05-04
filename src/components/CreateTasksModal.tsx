@@ -6,6 +6,8 @@ import CognifyInput from "./ui/CognifyInput";
 import CognifyButton from "./ui/CognigyButton";
 
 interface User {
+  user_metadata: any;
+  user_id: any;
   id: number;
   name: string;
 }
@@ -13,13 +15,21 @@ interface User {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (task: {
-    title: string;
-    description: string;
-    status: Status;
-    assigneeId?: number;
+  onCreate: (payload: {
+    ticketData: {
+      name: string;
+      description: string;
+      project_id: number;
+      created_by: string;
+      status_id: number;
+    };
+    userId: string;
   }) => void;
   users?: User[];
+  statusOptions?: any;
+  projectId: number; 
+  currentUserId: string;
+
 }
 
 interface FormErrors {
@@ -34,11 +44,14 @@ const CreateTaskModal: React.FC<Props> = ({
   onClose,
   onCreate,
   users = [],
+  statusOptions = [],
+  projectId,
+  currentUserId
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<Status>("todo");
-  const [assigneeId, setAssigneeId] = useState<number | undefined>(undefined);
+  const [status, setStatus] = useState<Status>(2);
+  const [assigneeId, setAssigneeId] = useState<string>("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,8 +60,8 @@ const CreateTaskModal: React.FC<Props> = ({
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setStatus("todo");
-    setAssigneeId(undefined);
+    setStatus(2);
+    setAssigneeId("");
     setFormErrors({});
     setApiError("");
   };
@@ -73,28 +86,34 @@ const CreateTaskModal: React.FC<Props> = ({
     }
 
     // Validate assignee
-    if (assigneeId === undefined) {
+    if (!assigneeId.trim()) {
       errors.assigneeId = "Assignee is required.";
     }
 
     return errors;
   };
 
-  // Handle the form submission
   const handleSubmit = async () => {
-    // Clear previous errors
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
-    // Start loading and reset API errors
     setLoading(true);
     setApiError("");
 
     try {
-      await onCreate({ title, description, status, assigneeId });
+      await onCreate({
+        ticketData: {
+          name: title,
+          description,
+          project_id: projectId,
+          created_by: currentUserId,
+          status_id: Number(status),
+        },
+        userId: assigneeId,
+      });
       resetForm();
       onClose();
     } catch (err) {
@@ -145,34 +164,33 @@ const CreateTaskModal: React.FC<Props> = ({
           label="Status"
           value={status}
           onChange={(val) => {
-            setStatus(val as Status);
+            setStatus(Number(val) as Status);
             setFormErrors((prev) => ({
               ...prev,
-              status: "", // Clear status error when selection changes
+              status: "",
             }));
           }}
-          options={[
-            { label: "To Do", value: "todo" },
-            { label: "In Progress", value: "inprogress" },
-            { label: "Done", value: "done" },
-          ]}
+          options={statusOptions.map((status: any) => ({
+            label: status.name,
+            value: status.status_id,
+          }))}
           required
           error={formErrors.status}
         />
 
         <CognifySelect
           label="Assignee"
-          value={assigneeId?.toString() || ""}
+          value={assigneeId}
           onChange={(val) => {
-            setAssigneeId(val ? Number(val) : undefined);
+            setAssigneeId(val);
             setFormErrors((prev) => ({
               ...prev,
-              assigneeId: "", // Clear assignee error when selection changes
+              assigneeId: "",
             }));
           }}
           options={users.map((user) => ({
-            label: user.name,
-            value: user.id.toString(),
+            label: user.user_metadata.fullName,
+            value: user.user_id,
           }))}
           required
           error={formErrors.assigneeId}

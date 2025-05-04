@@ -1,30 +1,45 @@
+// src/components/TaskCard.tsx
 import React from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { Task } from "../types/kanban";
+// REMOVE: import { useSortable } from "@dnd-kit/sortable";
+// REMOVE: import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from "@dnd-kit/core"; // <-- IMPORT this
+import { Task } from "../types/kanban"; // Adjust path if needed
 import { PencilIcon, EllipsisVerticalIcon } from "@heroicons/react/24/solid";
-import Avatar from "./ui/Avatar";
+import Avatar from "./ui/Avatar"; // Adjust path if needed
 
 interface Props {
   task: Task;
 }
 
 const TaskCard: React.FC<Props> = ({ task }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: task.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    isDragging // <-- Get isDragging state from useDraggable
+   } = useDraggable({ // <-- USE useDraggable
+      id: task.id,
+      data: { // <-- Keep providing the necessary data
+        type: "task",
+        taskDetails: task, // Pass the full task if needed in DragOverlay or handlers
+        originalStatusId: task.status // Keep track of where it started
+      },
+    });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  // Style to visually indicate dragging (e.g., dim the original)
+  // No transform/transition needed from the hook itself for basic dragging
+  const style: React.CSSProperties = {
+    opacity: isDragging ? 0.5 : 1, // Example: Dim original when dragging
+    // touchAction: 'none', // Might be needed for touch devices depending on setup
   };
 
   return (
     <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={style}
-      className="bg-white/70 hover:bg-white/90 transition-colors backdrop-blur-sm border border-gray-200 shadow-md hover:shadow-xl rounded-xl p-4 cursor-grab flex flex-col justify-between h-36"
+      ref={setNodeRef} // Assign ref
+      style={style}     // Apply dragging style
+      {...attributes} // Apply draggable attributes
+      {...listeners}  // Apply drag listeners
+      className="bg-white/70 hover:bg-white/90 transition-opacity duration-200 backdrop-blur-sm border border-gray-200 shadow-md hover:shadow-lg rounded-xl p-4 cursor-grab flex flex-col justify-between h-36" // Removed hover:shadow-xl to simplify, added transition-opacity
     >
       {/* Title & Icons */}
       <div className="flex justify-between items-start">
@@ -46,7 +61,8 @@ const TaskCard: React.FC<Props> = ({ task }) => {
 
       {/* Avatar */}
       <div className="flex justify-end mt-3">
-        <Avatar src="images/user.png" className="h-6 w-6 ring-2 ring-white" /> {/* Now className is part of AvatarProps */}
+        {/* Ensure Avatar component handles className */}
+        <Avatar src="/images/user.png" className="h-6 w-6 ring-2 ring-white" />
       </div>
     </div>
   );

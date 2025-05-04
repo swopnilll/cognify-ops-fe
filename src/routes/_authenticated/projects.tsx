@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 
-import { useMutation } from "@tanstack/react-query";
+import {  useQuery } from "@tanstack/react-query";
 
 import CognifyButton from "../../components/ui/CognigyButton";
 import CreateProjectModal from "../../components/project/CreateProject";
@@ -15,31 +15,18 @@ export const Route = createFileRoute("/_authenticated/projects")({
 
 function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [projects, setProjects] = useState<any[]>([]);
-
   const { user: authUser } = useAuth();
 
-  const mutation = useMutation({
-    mutationFn: fetchProjectsForUser,
-    onSuccess: (data) => {
-      console.log("Mutation successful:", data);
-      setProjects(data);
-    },
-    onError: (error) => {
-      console.error("Mutation error:", error);
-    },
+  const {
+    data: projects = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["projects", authUser?.id],
+    queryFn: () => fetchProjectsForUser(authUser!.id),
+    enabled: !!authUser, // only run if user is available
   });
-
-  const fetchProjects = () => {
-    if (authUser) {
-      mutation.mutate(authUser.id);
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   return (
     <>
@@ -69,7 +56,11 @@ function Projects() {
         />
 
         <section className="px-4 py-6">
-          {projects.length > 0 ? (
+          {isLoading ? (
+            <p className="text-center text-gray-500">Loading projects...</p>
+          ) : isError ? (
+            <p className="text-center text-red-500">Error loading projects.</p>
+          ) : projects.length > 0 ? (
             <ProjectTable data={projects} />
           ) : (
             <p className="text-center text-gray-500">No projects found.</p>
@@ -77,7 +68,11 @@ function Projects() {
         </section>
       </section>
 
-      <CreateProjectModal open={isModalOpen} onOpenChange={setIsModalOpen} onProjectCreated={fetchProjects} />
+      <CreateProjectModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onProjectCreated={refetch}
+      />
     </>
   );
 }

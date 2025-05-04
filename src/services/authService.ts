@@ -9,6 +9,7 @@ interface LoginParams {
 interface SignUpParams {
   email: string;
   password: string;
+  fullName: string;
 }
 
 export const login = async ({ email, password }: LoginParams) => {
@@ -46,9 +47,9 @@ export const login = async ({ email, password }: LoginParams) => {
   }
 };
 
-export const signUp = async ({ email, password }: SignUpParams) => {
+export const signUp = async ({ email, password, fullName }: SignUpParams) => {
   try {
-    const response = await axiosInstance.post("/api/auth/signup", { email, password });
+    const response = await axiosInstance.post("/api/auth/signup", { email, password, fullName });
 
     if(response.status === 201) {
       return true;

@@ -19,6 +19,7 @@ import { Route as AuthenticatedProjectsImport } from './routes/_authenticated/pr
 import { Route as AuthenticatedKanbanImport } from './routes/_authenticated/kanban'
 import { Route as AuthenticatedProjectProjectIdRouteImport } from './routes/_authenticated/project/$projectId/route'
 import { Route as AuthenticatedProjectProjectIdIndexImport } from './routes/_authenticated/project/$projectId/index'
+import { Route as AuthenticatedProjectProjectIdSettingsImport } from './routes/_authenticated/project/$projectId/settings'
 import { Route as AuthenticatedProjectProjectIdKanbanViewImport } from './routes/_authenticated/project/$projectId/kanbanView'
 import { Route as AuthenticatedProjectProjectIdAiPortalImport } from './routes/_authenticated/project/$projectId/ai-portal'
 
@@ -70,6 +71,13 @@ const AuthenticatedProjectProjectIdIndexRoute =
   AuthenticatedProjectProjectIdIndexImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => AuthenticatedProjectProjectIdRouteRoute,
+  } as any)
+
+const AuthenticatedProjectProjectIdSettingsRoute =
+  AuthenticatedProjectProjectIdSettingsImport.update({
+    id: '/settings',
+    path: '/settings',
     getParentRoute: () => AuthenticatedProjectProjectIdRouteRoute,
   } as any)
 
@@ -154,6 +162,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectProjectIdKanbanViewImport
       parentRoute: typeof AuthenticatedProjectProjectIdRouteImport
     }
+    '/_authenticated/project/$projectId/settings': {
+      id: '/_authenticated/project/$projectId/settings'
+      path: '/settings'
+      fullPath: '/project/$projectId/settings'
+      preLoaderRoute: typeof AuthenticatedProjectProjectIdSettingsImport
+      parentRoute: typeof AuthenticatedProjectProjectIdRouteImport
+    }
     '/_authenticated/project/$projectId/': {
       id: '/_authenticated/project/$projectId/'
       path: '/'
@@ -169,6 +184,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedProjectProjectIdRouteRouteChildren {
   AuthenticatedProjectProjectIdAiPortalRoute: typeof AuthenticatedProjectProjectIdAiPortalRoute
   AuthenticatedProjectProjectIdKanbanViewRoute: typeof AuthenticatedProjectProjectIdKanbanViewRoute
+  AuthenticatedProjectProjectIdSettingsRoute: typeof AuthenticatedProjectProjectIdSettingsRoute
   AuthenticatedProjectProjectIdIndexRoute: typeof AuthenticatedProjectProjectIdIndexRoute
 }
 
@@ -178,6 +194,8 @@ const AuthenticatedProjectProjectIdRouteRouteChildren: AuthenticatedProjectProje
       AuthenticatedProjectProjectIdAiPortalRoute,
     AuthenticatedProjectProjectIdKanbanViewRoute:
       AuthenticatedProjectProjectIdKanbanViewRoute,
+    AuthenticatedProjectProjectIdSettingsRoute:
+      AuthenticatedProjectProjectIdSettingsRoute,
     AuthenticatedProjectProjectIdIndexRoute:
       AuthenticatedProjectProjectIdIndexRoute,
   }
@@ -213,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/project/$projectId': typeof AuthenticatedProjectProjectIdRouteRouteWithChildren
   '/project/$projectId/ai-portal': typeof AuthenticatedProjectProjectIdAiPortalRoute
   '/project/$projectId/kanbanView': typeof AuthenticatedProjectProjectIdKanbanViewRoute
+  '/project/$projectId/settings': typeof AuthenticatedProjectProjectIdSettingsRoute
   '/project/$projectId/': typeof AuthenticatedProjectProjectIdIndexRoute
 }
 
@@ -225,6 +244,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsRoute
   '/project/$projectId/ai-portal': typeof AuthenticatedProjectProjectIdAiPortalRoute
   '/project/$projectId/kanbanView': typeof AuthenticatedProjectProjectIdKanbanViewRoute
+  '/project/$projectId/settings': typeof AuthenticatedProjectProjectIdSettingsRoute
   '/project/$projectId': typeof AuthenticatedProjectProjectIdIndexRoute
 }
 
@@ -239,6 +259,7 @@ export interface FileRoutesById {
   '/_authenticated/project/$projectId': typeof AuthenticatedProjectProjectIdRouteRouteWithChildren
   '/_authenticated/project/$projectId/ai-portal': typeof AuthenticatedProjectProjectIdAiPortalRoute
   '/_authenticated/project/$projectId/kanbanView': typeof AuthenticatedProjectProjectIdKanbanViewRoute
+  '/_authenticated/project/$projectId/settings': typeof AuthenticatedProjectProjectIdSettingsRoute
   '/_authenticated/project/$projectId/': typeof AuthenticatedProjectProjectIdIndexRoute
 }
 
@@ -254,6 +275,7 @@ export interface FileRouteTypes {
     | '/project/$projectId'
     | '/project/$projectId/ai-portal'
     | '/project/$projectId/kanbanView'
+    | '/project/$projectId/settings'
     | '/project/$projectId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -265,6 +287,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/project/$projectId/ai-portal'
     | '/project/$projectId/kanbanView'
+    | '/project/$projectId/settings'
     | '/project/$projectId'
   id:
     | '__root__'
@@ -277,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/project/$projectId'
     | '/_authenticated/project/$projectId/ai-portal'
     | '/_authenticated/project/$projectId/kanbanView'
+    | '/_authenticated/project/$projectId/settings'
     | '/_authenticated/project/$projectId/'
   fileRoutesById: FileRoutesById
 }
@@ -342,6 +366,7 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/project/$projectId/ai-portal",
         "/_authenticated/project/$projectId/kanbanView",
+        "/_authenticated/project/$projectId/settings",
         "/_authenticated/project/$projectId/"
       ]
     },
@@ -351,6 +376,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/project/$projectId/kanbanView": {
       "filePath": "_authenticated/project/$projectId/kanbanView.tsx",
+      "parent": "/_authenticated/project/$projectId"
+    },
+    "/_authenticated/project/$projectId/settings": {
+      "filePath": "_authenticated/project/$projectId/settings.tsx",
       "parent": "/_authenticated/project/$projectId"
     },
     "/_authenticated/project/$projectId/": {

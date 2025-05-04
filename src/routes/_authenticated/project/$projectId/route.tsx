@@ -19,8 +19,8 @@ function ProjectLayout(): React.JSX.Element {
     setProject({
       name: "Cognify Ops",
       description: "Software Project",
-    })
-  }, [])
+    });
+  }, []);
 
   return (
     <div className="relative flex h-[calc(100vh-100px)]">
@@ -100,9 +100,26 @@ function ProjectLayout(): React.JSX.Element {
                   alt="Ai Logo Icon"
                   className="w-8 h-8"
                 />
-                <p className="text-center">List</p>
+                <p className="text-center">Intellecta</p>
               </Link>
-          </nav>
+
+              <Link
+                to="/project/$projectId/settings"
+                params={{ projectId }}
+                preload="intent"
+                activeProps={{
+                  className: "bg-[#F2F7FF] font-bold text-blue-600",
+                }}
+                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
+              >
+                <img
+                  src="/images/Setting.png"
+                  alt="Settings Icon"
+                  className="w-8"
+                />
+                <p className="text-center">Settings</p>
+              </Link>
+            </nav>
           </>
         )}
       </div>
