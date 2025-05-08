@@ -12,7 +12,7 @@ const Header = () => {
   return (
     <header className="p-4 flex justify-between items-center bg-white shadow-lg">
       <Link to="/" className="flex gap-3 items-center">
-        <Logo src="images/main-logo.png" />
+        <Logo src="images/main-logo.svg" />
         <div className="flex flex-col text-[#1868DB]">
           <p className="text-2xl font-bold">Cognify Ops</p>
           <p className="text-xs pl-1 font-normal">THINK BEYOND TASKS</p>

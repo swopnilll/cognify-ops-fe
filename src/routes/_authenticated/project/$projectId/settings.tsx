@@ -61,7 +61,7 @@ function SettingPage() {
   };
 
   return (
-    <section className="flex flex-col gap-8">
+    <section className="flex flex-col gap-8 p-6">
       <p className="font-bold text-2xl">Settings</p>
 
       <section className="flex gap-6 items-center">

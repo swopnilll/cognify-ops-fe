@@ -137,7 +137,7 @@ function ProjectLayout(): React.JSX.Element {
       </button>
 
       {/* Right Content Panel */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto">
         <Outlet />
       </div>
     </div>

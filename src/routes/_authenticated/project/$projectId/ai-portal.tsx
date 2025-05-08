@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import Intellecta from '../../../../components/intellecta/Intellecta'
 
 export const Route = createFileRoute(
   '/_authenticated/project/$projectId/ai-portal',
@@ -7,5 +8,7 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  return <div>Hello "/_authenticated/project/$projectId/ai-portal"!</div>
+  return (
+    <Intellecta />
+  )
 }
