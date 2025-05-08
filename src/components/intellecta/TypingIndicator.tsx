@@ -1,9 +1,9 @@
-import { Loader2 } from "lucide-react";
-
 const TypingIndicator = () => (
-  <div className="self-start bg-gray-200 text-gray-800 px-4 py-2 rounded-lg flex items-center gap-1">
-    <Loader2 className="w-5 h-5 animate-spin" />
-    <span>Intellecta is typing...</span>
+  <div className="flex items-center gap-2 px-4 py-2">
+    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-150" />
+    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-300" />
+    <span className="text-gray-400 ml-2">Intellecta is typing...</span>
   </div>
 );
 
