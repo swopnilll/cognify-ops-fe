@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import ClipLoader from "react-spinners/ClipLoader";
 
 import CognigyButton from "../components/ui/CognigyButton";
 import CognifyInput from "../components/ui/CognifyInput";
@@ -13,77 +14,57 @@ export const Route = createFileRoute("/login")({
 
 function LoginComponent() {
   const auth = useAuth();
-
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({ email: "", password: "" });
   const [submitError, setSubmitError] = useState("");
 
-  const mutation = useMutation({
+  const {
+    mutate,
+    isPending,
+  } = useMutation({
     mutationFn: login,
     onSuccess: (data) => {
-      console.log("Login successful:", data);
-      setErrors({
-        email: "",
-        password: "",
-      });
-
+      setErrors({ email: "", password: "" });
       auth.signIn(data);
-      
       navigate({ to: "/projects", replace: true });
     },
     onError: (error: any) => {
-      console.error("Login error:", error);
-      setSubmitError(error.response.data.error || "Login failed");
+      setSubmitError(error?.response?.data?.error || "Login failed");
     },
   });
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
     setSubmitError("");
   };
 
-  const handleSubmit = async () => {
-    const newErrors: typeof errors = {
+  const validateForm = () => {
+    const newErrors = {
       email: /\S+@\S+\.\S+/.test(form.email) ? "" : "Enter a valid email",
       password: form.password.length >= 6 ? "" : "Min 6 characters",
     };
 
     setErrors(newErrors);
+    return !Object.values(newErrors).some(Boolean);
+  };
 
-    const hasError = Object.values(newErrors).some((e) => e);
-
-    if (!hasError) { 
-      // try {
-      //   await login({ email: form.email, password: form.password });
-
-      //   navigate({ to: "/projects", replace: true });
-      // } catch (err: any) {
-      //   setSubmitError(err.message || "Login failed");
-      // }
-
-      mutation.mutate({ email: form.email, password: form.password });
+  const handleSubmit = () => {
+    if (validateForm()) {
+      mutate({ email: form.email, password: form.password });
     }
   };
 
   return (
-    <section className="max-w-lg mx-auto mt-10 bg-white p-15 shadow-md rounded-xl flex flex-col gap-10 lg:w-1/2">
-      <section>
+    <section className="max-w-lg mx-auto mt-10 bg-white p-10 shadow-md rounded-xl flex flex-col gap-6 lg:w-1/2">
+      <header>
         <p className="text-sm text-gray-500">Welcome Back</p>
-        <p className="text-2xl font-semibold text-black mt-1">
+        <h1 className="text-2xl font-semibold text-black mt-1">
           Login to Your Account
-        </p>
-      </section>
+        </h1>
+      </header>
 
       <CognifyInput
         label="Email"
@@ -103,25 +84,33 @@ function LoginComponent() {
         required
       />
 
-      {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
+      {submitError && (
+        <p className="text-red-500 text-sm text-center">{submitError}</p>
+      )}
 
-      <CognigyButton
-        label="Login"
-        variant="outlined"
-        customColor="blue"
-        textColor="white"
-        onClick={handleSubmit}
-        size="large"
-      />
+      {isPending ? (
+        <div className="flex justify-center items-center py-2">
+          <ClipLoader color="#3b82f6" size={32} />
+        </div>
+      ) : (
+        <CognigyButton
+          label="Login"
+          variant="outlined"
+          customColor="blue"
+          textColor="white"
+          onClick={handleSubmit}
+          size="large"
+        />
+      )}
 
-      <section className="flex justify-between items-center">
+      <footer className="flex justify-center items-center">
         <p className="text-sm text-gray-500">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-blue-500">
             Sign Up
           </Link>
         </p>
-      </section>
+      </footer>
     </section>
   );
 }

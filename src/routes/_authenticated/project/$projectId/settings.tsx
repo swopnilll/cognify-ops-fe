@@ -8,6 +8,7 @@ import { fetchAllUsers } from "../../../../services/userService";
 import { addUsersToProject } from "../../../../services/projectService";
 import { toast } from "react-toastify";
 import { useState } from "react";
+import queryClient from "../../../../queryClient";
 
 export const Route = createFileRoute(
   "/_authenticated/project/$projectId/settings"
@@ -49,7 +50,12 @@ function SettingPage() {
       addUsersToProject(userList, Number(projectId)),
     onSuccess: (data) => {
       console.log("Users added successfully!");
-      toast.success(`Users added successfully! Number of users added: ${data.addedCount}`);
+      toast.success(
+        `Users added successfully! Number of users added: ${data.addedCount}`
+      );
+
+      // Invalidate the query to refetch project users after mutation
+      queryClient.invalidateQueries({ queryKey: ["projectUsers", projectId] });
     },
     onError: (error: any) => {
       console.error("Failed to add users:", error);

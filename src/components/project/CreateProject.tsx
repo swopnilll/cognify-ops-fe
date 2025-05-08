@@ -1,15 +1,14 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-
 import { useMutation } from "@tanstack/react-query";
-
-import CognifyInput from "../ui/CognifyInput";
-import CognifyButton from "../ui/CognigyButton";
 import React, { useState } from "react";
-
 import { createProject } from "../../services/projectService";
 import { useAuth } from "../../hooks/useAuthV2";
 import { toast } from "react-toastify";
+import ClipLoader from "react-spinners/ClipLoader";
+
+import CognifyInput from "../ui/CognifyInput";
+import CognifyButton from "../ui/CognigyButton";
 
 interface Props {
   open: boolean;
@@ -25,16 +24,21 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange, onProjectCrea
 
   const [errors, setErrors] = useState<{ name?: string; key?: string }>({});
 
+  const [loading, setLoading] = useState(false); // New loading state
+
   const mutation = useMutation({
     mutationFn: createProject,
+    onMutate: () => setLoading(true), // Set loading state to true when mutation starts
     onSuccess: (data) => {
       console.log("Project created successfully:", data);
       toast.success("Project created successfully!");
+      setLoading(false); // Set loading to false after success
       onOpenChange(false);
       onProjectCreated();
     },
     onError: (error: any) => {
       console.error("Error creating project:", error);
+      setLoading(false); // Set loading to false after error
     },
   });
 
@@ -64,9 +68,7 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange, onProjectCrea
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content className="fixed top-[25%] left-[25%] w-[50vw] h-[50vh] bg-white shadow-2xl rounded-lg z-50 flex flex-col p-6 overflow-auto">
           <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-2xl font-bold">
-              Create Project
-            </Dialog.Title>
+            <Dialog.Title className="text-2xl font-bold">Create Project</Dialog.Title>
             <Dialog.Close asChild>
               <button>
                 <X className="w-6 h-6" />
@@ -92,7 +94,7 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange, onProjectCrea
                 value={key}
                 onChange={setKey}
                 required
-                error={errors.name}
+                error={errors.key} // Fixed key error display
               />
             </div>
 
@@ -113,7 +115,13 @@ const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange, onProjectCrea
               textColor="white"
               label="Create Project"
               onClick={handleSubmit}
+              disabled={loading} 
             />
+            {loading && (
+              <div className="ml-4">
+                <ClipLoader size={24} color="#1868DB" />
+              </div>
+            )}
           </div>
         </Dialog.Content>
       </Dialog.Portal>

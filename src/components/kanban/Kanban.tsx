@@ -39,6 +39,7 @@ import {
 
 // --- Hooks ---
 import { useAuth } from "../../hooks/useAuthV2";
+import { ClipLoader } from "react-spinners";
 
 // --- Helper Functions ---
 const getColorClass = (name: string) => {
@@ -288,11 +289,12 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 
   // --- Render Logic ---
   if (isLoadingStatuses || isLoadingProjectUsers) {
-    return <div className="p-6 text-center">Loading board data...</div>;
+    return (
+      <div className="relative w-full h-full">
+        <ClipLoader className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      </div>
+    );
   }
-
-  // Log status options for debugging if needed
-  // console.log("Current Status Options:", statusOptions);
 
   return (
     <div className="relative p-6">
@@ -393,3 +395,4 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 };
 
 export default KanbanBoard;
+

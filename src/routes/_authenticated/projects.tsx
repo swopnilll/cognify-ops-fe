@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import {  useState } from "react";
-
-import {  useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import CognifyButton from "../../components/ui/CognigyButton";
 import CreateProjectModal from "../../components/project/CreateProject";
 import { fetchProjectsForUser } from "../../services/projectService";
 import { useAuth } from "../../hooks/useAuthV2";
 import ProjectTable from "../../components/ui/ProjectTable";
+import { ClipLoader } from "react-spinners";
+
 
 export const Route = createFileRoute("/_authenticated/projects")({
   component: Projects,
@@ -28,9 +29,22 @@ function Projects() {
     enabled: !!authUser, // only run if user is available
   });
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <ClipLoader />;
+    }
+    if (isError) {
+      return <p className="text-center text-red-500">Error loading projects.</p>;
+    }
+    if (projects.length === 0) {
+      return <p className="text-center text-gray-500">No projects found. You can create a new project.</p>;
+    }
+    return <ProjectTable data={projects} />;
+  };
+
   return (
     <>
-      <section className="flex flex-col items-center w-full h-[calc(100vh-80px)] gap-6 p-4 pt-16">
+      <section className="flex flex-col items-center w-full h-[calc(100vh-100px)] gap-6 p-4 pt-16">
         <img
           src="images/projects-logo.svg"
           alt="Projects Logo"
@@ -56,15 +70,7 @@ function Projects() {
         />
 
         <section className="px-4 py-6">
-          {isLoading ? (
-            <p className="text-center text-gray-500">Loading projects...</p>
-          ) : isError ? (
-            <p className="text-center text-red-500">Error loading projects.</p>
-          ) : projects.length > 0 ? (
-            <ProjectTable data={projects} />
-          ) : (
-            <p className="text-center text-gray-500">No projects found.</p>
-          )}
+          {renderContent()}
         </section>
       </section>
 
