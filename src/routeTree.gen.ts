@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as TestImport } from './routes/test'
 import { Route as SignupImport } from './routes/signup'
 import { Route as LoginImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
@@ -23,6 +24,12 @@ import { Route as AuthenticatedProjectProjectIdKanbanViewImport } from './routes
 import { Route as AuthenticatedProjectProjectIdAiPortalImport } from './routes/_authenticated/project/$projectId/ai-portal'
 
 // Create/Update Routes
+
+const TestRoute = TestImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const SignupRoute = SignupImport.update({
   id: '/signup',
@@ -120,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
+    '/test': {
+      id: '/test'
+      path: '/test'
+      fullPath: '/test'
+      preLoaderRoute: typeof TestImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated/projects': {
       id: '/_authenticated/projects'
       path: '/projects'
@@ -210,6 +224,7 @@ export interface FileRoutesByFullPath {
   '': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/test': typeof TestRoute
   '/projects': typeof AuthenticatedProjectsRoute
   '/project/$projectId': typeof AuthenticatedProjectProjectIdRouteRouteWithChildren
   '/project/$projectId/ai-portal': typeof AuthenticatedProjectProjectIdAiPortalRoute
@@ -223,6 +238,7 @@ export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/test': typeof TestRoute
   '/projects': typeof AuthenticatedProjectsRoute
   '/project/$projectId/ai-portal': typeof AuthenticatedProjectProjectIdAiPortalRoute
   '/project/$projectId/kanbanView': typeof AuthenticatedProjectProjectIdKanbanViewRoute
@@ -236,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/test': typeof TestRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/project/$projectId': typeof AuthenticatedProjectProjectIdRouteRouteWithChildren
   '/_authenticated/project/$projectId/ai-portal': typeof AuthenticatedProjectProjectIdAiPortalRoute
@@ -251,6 +268,7 @@ export interface FileRouteTypes {
     | ''
     | '/login'
     | '/signup'
+    | '/test'
     | '/projects'
     | '/project/$projectId'
     | '/project/$projectId/ai-portal'
@@ -263,6 +281,7 @@ export interface FileRouteTypes {
     | ''
     | '/login'
     | '/signup'
+    | '/test'
     | '/projects'
     | '/project/$projectId/ai-portal'
     | '/project/$projectId/kanbanView'
@@ -274,6 +293,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/signup'
+    | '/test'
     | '/_authenticated/projects'
     | '/_authenticated/project/$projectId'
     | '/_authenticated/project/$projectId/ai-portal'
@@ -288,6 +308,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  TestRoute: typeof TestRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -295,6 +316,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  TestRoute: TestRoute,
 }
 
 export const routeTree = rootRoute
@@ -310,7 +332,8 @@ export const routeTree = rootRoute
         "/",
         "/_authenticated",
         "/login",
-        "/signup"
+        "/signup",
+        "/test"
       ]
     },
     "/": {
@@ -328,6 +351,9 @@ export const routeTree = rootRoute
     },
     "/signup": {
       "filePath": "signup.tsx"
+    },
+    "/test": {
+      "filePath": "test.tsx"
     },
     "/_authenticated/projects": {
       "filePath": "_authenticated/projects.tsx",
