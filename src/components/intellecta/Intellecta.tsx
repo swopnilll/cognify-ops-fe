@@ -4,7 +4,8 @@ import ConversationSidebar, {
   Message,
 } from "./ConversationSidebar";
 import ChatLayout from "./ChatLayout";
-import { streamOpenAIResponse } from "../../services/intellectaService";
+import { getContextBasedResponse, streamOpenAIResponse } from "../../services/intellectaService";
+
 
 const Intellecta = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -15,6 +16,58 @@ const Intellecta = () => {
     string | null
   >(null);
   const botTextRef = useRef<string>("");
+
+
+  const handleContextSend = async (msg: string) => {
+    if (!msg.trim()) return;
+  
+    const timestamp = new Date().toISOString();
+    setIsThinking(true);
+  
+    // Add user message
+    const userMessage: Message = { sender: "user", text: msg, timestamp };
+    setMessages((prev) => [...prev, userMessage]);
+  
+    try {
+      const response = await getContextBasedResponse(msg);
+  
+      const botMessage: Message = { sender: "bot", text: response, timestamp };
+  
+      setMessages((prev) => [...prev, botMessage]);
+  
+      const date = new Date().toDateString();
+      const id = `${date}-${Date.now()}`;
+  
+      const newConversation: Conversation = {
+        id,
+        date,
+        messages: [userMessage, botMessage],
+      };
+  
+      if (!selectedConversationId) {
+        setConversations((prev) => [...prev, newConversation]);
+        setSelectedConversationId(id);
+      } else {
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.id === selectedConversationId
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, userMessage, botMessage],
+                }
+              : conv
+          )
+        );
+      }
+  
+      setIsThinking(false);
+    } catch (err) {
+      console.error("❌ Context API failed:", err);
+      setIsThinking(false);
+    }
+  };
+  
+
 
   const handleSend = useCallback(
     async (msg: string) => {
@@ -118,6 +171,7 @@ const Intellecta = () => {
           messages={messages}
           isThinking={isThinking}
           onSend={handleSend}
+          onContextQuery={handleContextSend}
         />
       </div>
 
