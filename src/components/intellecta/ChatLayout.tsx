@@ -8,9 +8,10 @@ type Props = {
   messages: Message[];
   isThinking: boolean;
   onSend: (msg: string) => void;
+  onContextQuery:(message:string)=>void;
 };
 
-const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
+const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend, onContextQuery }) => {
   const isEmpty = messages.length === 0;
 
   return (
@@ -32,7 +33,7 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
             How can I help you today?
           </p>
           <div className="w-full max-w-3xl px-2">
-            <ChatInput onSend={onSend} />
+            <ChatInput onSend={onSend} onContextQuery={onContextQuery} />
           </div>
         </div>
       ) : (
@@ -49,7 +50,7 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
 
           {/* Chat input */}
           <div className="w-full max-w-3xl px-2 py-4 self-center bg-[#F8F8FB]">
-            <ChatInput onSend={onSend} />
+            <ChatInput onSend={onSend} onContextQuery={onContextQuery} />
           </div>
         </div>
       )}

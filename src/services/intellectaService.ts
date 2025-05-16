@@ -13,17 +13,18 @@ export const streamOpenAIResponse = async (
   onError?: (error: any) => void
 ): Promise<void> => {
   try {
-    const response = await fetchWithAuth("/api/openai/chat", {
+    let finalOutput = "";
+    const response = await fetchWithAuth("api/openai/chat", {
       method: "POST",
       body: JSON.stringify({ question }),
     });
 
-    if (!response.body) throw new Error("No response body returned from server.");
+    if (!response.body)
+      throw new Error("No response body returned from server.");
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
     let done = false;
-    let finalOutput = "";
 
     while (!done) {
       const { value, done: streamDone } = await reader.read();
@@ -33,8 +34,8 @@ export const streamOpenAIResponse = async (
         const rawChunk = decoder.decode(value, { stream: true });
         const lines = rawChunk
           .split("\n")
-          .map(line => line.trim())
-          .filter(line => line.startsWith("data:"));
+          .map((line) => line.trim())
+          .filter((line) => line.startsWith("data:"));
 
         for (const line of lines) {
           const jsonData = line.replace(/^data:\s*/, "");
@@ -83,3 +84,19 @@ export const streamOpenAIResponse = async (
     onError?.(err);
   }
 };
+
+export async function getContextBasedResponse(query: string): Promise<string> {
+  const apiResponse = await fetchWithAuth("api/openai/askIntellecta", {
+    method: "POST",
+    body: JSON.stringify({ query }),
+  });
+
+  if (!apiResponse.ok) {
+    throw new Error("Failed to fetch response from askIntellecta");
+  }
+
+  const json = await apiResponse.json();
+  const cleanedResponse = json.response.replace(/\\"/g, '"');
+
+  return cleanedResponse;
+}
