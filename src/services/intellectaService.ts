@@ -14,7 +14,7 @@ export const streamOpenAIResponse = async (
 ): Promise<void> => {
   try {
     let finalOutput = "";
-    const response = await fetchWithAuth("api/openai/chat", {
+    const response = await fetchWithAuth("/api/openai/chat", {
       method: "POST",
       body: JSON.stringify({ question }),
     });
@@ -86,7 +86,7 @@ export const streamOpenAIResponse = async (
 };
 
 export async function getContextBasedResponse(query: string): Promise<string> {
-  const apiResponse = await fetchWithAuth("api/openai/askIntellecta", {
+  const apiResponse = await fetchWithAuth("/api/openai/askIntellecta", {
     method: "POST",
     body: JSON.stringify({ query }),
   });
