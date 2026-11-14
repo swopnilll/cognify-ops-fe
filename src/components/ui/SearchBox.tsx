@@ -16,7 +16,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange, placeholder = "S
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+        className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-base text-slate-900 sm:text-sm placeholder:text-slate-400 shadow-sm transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
       />
     </div>
   );

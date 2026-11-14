@@ -97,15 +97,15 @@ function SettingPage() {
     }
 
     return (
-      <table className="min-w-full text-left text-sm">
+      <table className="w-full table-fixed text-left text-sm">
         <thead className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
           <tr>
-            <th className="w-12 px-5 py-3">
+            <th className="w-11 px-4 py-3 sm:w-14 sm:px-5">
               <span className="sr-only">Select</span>
             </th>
-            <th className="px-5 py-3">User</th>
-            <th className="px-5 py-3">Last login</th>
-            <th className="px-5 py-3">Access</th>
+            <th className="py-3 pr-4 sm:px-5">User</th>
+            <th className="hidden w-36 px-5 py-3 sm:table-cell">Last login</th>
+            <th className="hidden w-36 px-5 py-3 sm:table-cell">Access</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -113,7 +113,7 @@ function SettingPage() {
             const isMember = memberIds.has(user.user_id);
             return (
               <tr key={user.user_id} className="hover:bg-slate-50">
-                <td className="px-5 py-3.5">
+                <td className="px-4 py-3.5 sm:px-5">
                   <input
                     type="checkbox"
                     aria-label={`Select ${user.name || user.email}`}
@@ -123,19 +123,22 @@ function SettingPage() {
                     className="h-4 w-4 rounded border-slate-300 accent-brand-600 disabled:opacity-40"
                   />
                 </td>
-                <td className="px-5 py-3.5">
+                <td className="py-3.5 pr-4 sm:px-5">
                   <div className="flex items-center gap-3">
                     <Avatar name={user.name || user.email} src={user.picture || undefined} size={32} />
                     <div className="min-w-0">
                       <p className="truncate font-medium text-slate-900">{user.name || "—"}</p>
                       <p className="truncate text-slate-500">{user.email}</p>
+                      {isMember && (
+                        <p className="mt-0.5 text-xs font-medium text-emerald-700 sm:hidden">Member</p>
+                      )}
                     </div>
                   </div>
                 </td>
-                <td className="whitespace-nowrap px-5 py-3.5 text-slate-600">
+                <td className="hidden whitespace-nowrap px-5 py-3.5 text-slate-600 sm:table-cell">
                   {formatLastLogin(user.last_login)}
                 </td>
-                <td className="whitespace-nowrap px-5 py-3.5">
+                <td className="hidden whitespace-nowrap px-5 py-3.5 sm:table-cell">
                   {isMember ? (
                     <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
                       Member
@@ -153,18 +156,18 @@ function SettingPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <PageHeader projectName={project?.name} title="Settings" />
 
       <section className="rounded-2xl border border-slate-200 bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-4 sm:p-5">
           <div>
             <h2 className="text-base font-semibold text-slate-900">Team members</h2>
             <p className="mt-0.5 text-sm text-slate-500">
               Select users to give them access to this project.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:flex-nowrap">
             <SearchBox value={search} onChange={setSearch} placeholder="Search users" />
             <Button
               icon={<UserPlus className="h-4 w-4" />}

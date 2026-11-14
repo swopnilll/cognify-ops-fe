@@ -12,10 +12,13 @@ import {
 const ERROR_TEXT =
   "Sorry, I couldn’t get an answer. The AI service may be unavailable. Please try again.";
 
+// From lg up the history sits beside the chat; below that it is a drawer.
+const isWideScreen = () => window.matchMedia("(min-width: 1024px)").matches;
+
 const Intellecta = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(isWideScreen);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
 
@@ -95,6 +98,7 @@ const Intellecta = () => {
   };
 
   const handleSelectConversation = (id: string) => {
+    if (!isWideScreen()) setIsSidebarOpen(false);
     if (id === "new") {
       setMessages([]);
       setSelectedConversationId(null);
@@ -111,7 +115,7 @@ const Intellecta = () => {
     <section className="flex h-full">
       <div className="relative min-w-0 flex-1">
         {!isSidebarOpen && (
-          <div className="absolute right-4 top-3 z-10">
+          <div className="absolute right-3 top-3 z-10 sm:right-4">
             <Button
               variant="secondary"
               size="sm"

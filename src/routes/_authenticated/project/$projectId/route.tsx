@@ -21,11 +21,12 @@ function ProjectLayout(): React.JSX.Element {
   const [collapsed, setCollapsed] = React.useState(false);
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)]">
+    <div className="flex h-[calc(100dvh-3.5rem)] flex-col md:flex-row">
+      {/* Desktop: sidebar. Phones get the tab bar at the bottom instead. */}
       <aside
-        className={`flex shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ${
+        className={`hidden shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ${
           collapsed ? "w-16" : "w-60"
-        }`}
+        } md:flex`}
       >
         <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-3">
           <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-lg bg-brand-50 px-1.5 text-xs font-bold tracking-wide text-brand-700">
@@ -75,9 +76,28 @@ function ProjectLayout(): React.JSX.Element {
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
         <Outlet />
       </div>
+
+      <nav
+        aria-label="Project"
+        className="grid shrink-0 grid-cols-4 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      >
+        {navItems.map(({ to, label, icon: Icon, exact }) => (
+          <Link
+            key={to}
+            to={to}
+            params={{ projectId }}
+            activeOptions={{ exact }}
+            className="flex h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium text-slate-500"
+            activeProps={{ className: "!text-brand-700" }}
+          >
+            <Icon className="h-5 w-5" />
+            {label}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }

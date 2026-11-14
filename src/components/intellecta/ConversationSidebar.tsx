@@ -34,7 +34,14 @@ const ConversationSidebar: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-l border-slate-200 bg-white">
+    <>
+    {/* Below lg the history is a drawer over the chat; this is its backdrop. */}
+    <div
+      aria-hidden="true"
+      onClick={onToggle}
+      className="fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
+    />
+    <aside className="fixed inset-y-0 right-0 z-50 flex w-72 max-w-[85vw] shrink-0 flex-col border-l border-slate-200 bg-white shadow-xl lg:static lg:z-auto lg:w-64 lg:max-w-none lg:shadow-none">
       <div className="flex h-14 items-center justify-between border-b border-slate-100 px-4">
         <p className="text-sm font-semibold text-slate-900">History</p>
         <button
@@ -87,6 +94,7 @@ const ConversationSidebar: React.FC<Props> = ({
         )}
       </div>
     </aside>
+    </>
   );
 };
 

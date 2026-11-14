@@ -28,13 +28,13 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center px-6">
+      <div className="flex h-full flex-col items-center justify-center px-4 py-14 sm:px-6">
         <div className="w-full max-w-2xl">
           <div className="mb-8 text-center">
             <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
               <Sparkles className="h-6 w-6" />
             </span>
-            <h2 className="mt-4 text-2xl font-semibold tracking-tight text-slate-900">
+            <h2 className="mt-4 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
               How can I help you today?
             </h2>
             <p className="mt-1.5 text-sm text-slate-500">
@@ -63,7 +63,7 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-14 sm:px-6 sm:pb-6 xl:pt-6">
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
           {messages.map((msg, idx) => (
             <ChatBubble key={idx} sender={msg.sender} text={msg.text} isError={msg.isError} />
@@ -77,7 +77,7 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
         </div>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="px-4 pb-4 sm:px-6 sm:pb-6">
         <div className="mx-auto w-full max-w-2xl">
           <ChatInput onSend={onSend} disabled={isThinking} />
         </div>

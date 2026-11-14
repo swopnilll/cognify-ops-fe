@@ -10,9 +10,9 @@ interface PageHeaderProps {
 // Breadcrumb + title row used at the top of every project page.
 const PageHeader: React.FC<PageHeaderProps> = ({ projectName, title, actions }) => {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-4 flex flex-wrap items-end sm:mb-6 justify-between gap-x-4 gap-y-3">
       <div className="min-w-0">
-        <p className="text-sm text-slate-500">
+        <p className="truncate text-sm text-slate-500">
           <Link to="/projects" className="hover:text-slate-700">
             Projects
           </Link>

@@ -146,7 +146,7 @@ const CreateTaskModal: React.FC<Props> = ({
           </p>
         )}
 
-        <div className="mt-2 flex justify-end gap-2">
+        <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={close}>
             Cancel
           </Button>

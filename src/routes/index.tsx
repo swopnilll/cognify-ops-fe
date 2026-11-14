@@ -41,18 +41,18 @@ function ProductPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
           <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {previewColumns.map((column) => (
-            <div key={column.name} className="rounded-xl bg-slate-100 p-2">
+            <div key={column.name} className="min-w-0 rounded-xl bg-slate-100 p-1.5 sm:p-2">
               <div className="mb-2 flex items-center gap-1.5 px-1 text-xs font-medium text-slate-600">
-                <span className={`h-2 w-2 rounded-full ${column.dot}`} />
-                {column.name}
+                <span className={`h-2 w-2 shrink-0 rounded-full ${column.dot}`} />
+                <span className="truncate">{column.name}</span>
               </div>
               <div className="flex flex-col gap-2">
                 {column.cards.map((card) => (
                   <div
                     key={card}
-                    className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-700 shadow-sm"
+                    className="rounded-lg border border-slate-200 bg-white p-2 text-xs font-medium sm:p-2.5 text-slate-700 shadow-sm"
                   >
                     {card}
                   </div>
@@ -63,7 +63,7 @@ function ProductPreview() {
         </div>
       </div>
 
-      <div className="absolute -bottom-8 -right-2 w-64 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-brand-900/10 sm:-right-6">
+      <div className="absolute -bottom-8 right-0 w-56 rounded-2xl sm:w-64 border border-slate-200 bg-white p-4 shadow-xl shadow-brand-900/10 sm:-right-6">
         <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-brand-700">
           <Sparkles className="h-3.5 w-3.5" />
           Intellecta
@@ -81,7 +81,7 @@ function HomePage() {
 
   return (
     <div className="bg-white">
-      <section className="mx-auto grid max-w-6xl items-center gap-16 px-6 pb-24 pt-16 lg:grid-cols-2 lg:pt-24">
+      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-10 sm:gap-16 sm:px-6 sm:pb-24 sm:pt-16 lg:grid-cols-2 lg:pt-24">
         <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-inset ring-brand-600/20">
             <Sparkles className="h-3.5 w-3.5" />
@@ -92,7 +92,7 @@ function HomePage() {
             <br />
             <span className="text-brand-600">Ask it questions.</span>
           </h1>
-          <p className="mt-5 max-w-lg text-lg leading-relaxed text-slate-600">
+          <p className="mt-5 max-w-lg text-base leading-relaxed sm:text-lg text-slate-600">
             Cognify Ops turns your tasks into a knowledge base as you go, so answers about
             your project are one question away.
           </p>
@@ -119,7 +119,7 @@ function HomePage() {
       </section>
 
       <section className="border-t border-slate-200 bg-slate-50">
-        <div className="mx-auto grid max-w-6xl gap-6 px-6 py-16 md:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl gap-4 px-4 py-10 sm:gap-6 sm:px-6 sm:py-16 md:grid-cols-3">
           {features.map(({ icon: Icon, title, body }) => (
             <div key={title} className="rounded-2xl border border-slate-200 bg-white p-6">
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">

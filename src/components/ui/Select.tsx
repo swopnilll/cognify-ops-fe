@@ -33,7 +33,7 @@ function Select<T extends string | number>({
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
-          className={`block w-full appearance-none rounded-lg border bg-white py-2 pl-3 pr-9 text-sm shadow-sm transition focus:outline-none focus:ring-2 disabled:bg-slate-50 ${
+          className={`block w-full appearance-none rounded-lg border bg-white py-2 pl-3 pr-9 text-base shadow-sm sm:text-sm transition focus:outline-none focus:ring-2 disabled:bg-slate-50 ${
             value === "" ? "text-slate-400" : "text-slate-900"
           } ${
             error

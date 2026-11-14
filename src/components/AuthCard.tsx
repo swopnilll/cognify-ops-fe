@@ -11,7 +11,7 @@ interface AuthCardProps {
 // Shared frame for the login and sign-up forms.
 const AuthCard: React.FC<AuthCardProps> = ({ title, subtitle, footer, onSubmit, children }) => {
   return (
-    <div className="flex flex-1 items-center justify-center px-4 py-12">
+    <div className="flex flex-1 items-center justify-center px-4 py-8 sm:py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <img src="/images/main-logo.svg" alt="" className="mx-auto h-12 w-12" />
@@ -25,7 +25,7 @@ const AuthCard: React.FC<AuthCardProps> = ({ title, subtitle, footer, onSubmit, 
             e.preventDefault();
             onSubmit();
           }}
-          className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
         >
           {children}
         </form>

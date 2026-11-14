@@ -25,13 +25,13 @@ const TaskCard: React.FC<Props> = ({ task, overlay = false }) => {
       ref={overlay ? undefined : setNodeRef}
       {...(overlay ? {} : attributes)}
       {...(overlay ? {} : listeners)}
-      className={`rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition ${
+      className={`touch-manipulation select-none rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition [-webkit-touch-callout:none] ${
         overlay
           ? "rotate-2 cursor-grabbing shadow-lg ring-1 ring-brand-300"
           : "cursor-grab hover:border-slate-300 hover:shadow"
       } ${isDragging ? "opacity-40" : ""}`}
     >
-      <p className="text-sm font-medium leading-snug text-slate-900">{task.title}</p>
+      <p className="break-words text-sm font-medium leading-snug text-slate-900">{task.title}</p>
       {task.description && (
         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
           {task.description}

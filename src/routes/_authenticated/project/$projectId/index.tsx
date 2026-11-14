@@ -47,7 +47,37 @@ function ListView() {
     }
 
     return (
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+      <>
+      {/* Phones: one card per task. */}
+      <ul className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:hidden">
+        {tasks.map((task) => {
+          const statusName = statusNames.get(task.status) ?? "No status";
+          return (
+            <li key={task.id} className="p-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="min-w-0 break-words text-sm font-medium text-slate-900">{task.title}</p>
+                <span
+                  className={`inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${getStatusStyle(statusName).pill}`}
+                >
+                  {statusName}
+                </span>
+              </div>
+              {task.description && (
+                <p className="mt-1 line-clamp-2 text-sm text-slate-500">{task.description}</p>
+              )}
+              <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                <span className="font-medium">{task.ticketKey}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <Avatar name={task.assigneeName} src={task.assigneePicture} size={20} />
+                  <span className="truncate">{task.assigneeName ?? "Unassigned"}</span>
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-2xl border border-slate-200 bg-white sm:block">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs font-medium text-slate-500">
             <tr>
@@ -90,11 +120,12 @@ function ListView() {
           </tbody>
         </table>
       </div>
+      </>
     );
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       <PageHeader projectName={project?.name} title="List" />
       {renderContent()}
     </div>

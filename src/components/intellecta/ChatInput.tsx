@@ -37,17 +37,18 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }) => {
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Ask Intellecta anything…"
         aria-label="Message"
-        className="block w-full resize-none bg-transparent px-1 text-sm leading-relaxed text-slate-900 outline-none placeholder:text-slate-400"
+        className="block w-full resize-none bg-transparent px-1 text-base leading-relaxed text-slate-900 sm:text-sm outline-none placeholder:text-slate-400"
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             handleSend();
           }
         }}
-        autoFocus
+        // Focusing on a phone would open the keyboard over the page straight away.
+        autoFocus={window.matchMedia("(pointer: fine)").matches}
       />
 
-      <div className="mt-2 flex items-center justify-between">
+      <div className="mt-2 flex items-center justify-between gap-2">
         <button
           type="button"
           aria-pressed={useProjectKnowledge}
@@ -72,7 +73,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled = false }) => {
           onClick={handleSend}
           disabled={!canSend}
           aria-label="Send message"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 sm:h-8 sm:w-8 text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
           <ArrowUp className="h-4 w-4" />
         </button>

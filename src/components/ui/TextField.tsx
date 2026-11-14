@@ -17,7 +17,7 @@ interface TextFieldProps {
 }
 
 const fieldClasses =
-  "block w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:outline-none focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500";
+  "block w-full rounded-lg border bg-white px-3 py-2 text-base text-slate-900 sm:text-sm placeholder:text-slate-400 shadow-sm transition focus:outline-none focus:ring-2 disabled:bg-slate-50 disabled:text-slate-500";
 
 const TextField: React.FC<TextFieldProps> = ({
   label,

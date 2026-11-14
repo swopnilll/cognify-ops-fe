@@ -21,10 +21,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, description, chil
         <div className="flex min-h-full items-center justify-center p-4">
           <DialogPanel
             transition
-            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl transition duration-200 data-[closed]:scale-95 data-[closed]:opacity-0"
+            className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-xl sm:p-6 transition duration-200 data-[closed]:scale-95 data-[closed]:opacity-0"
           >
             <div className="mb-5 flex items-start justify-between gap-4">
-              <div>
+              <div className="min-w-0">
                 <DialogTitle className="text-lg font-semibold text-slate-900">{title}</DialogTitle>
                 {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
               </div>

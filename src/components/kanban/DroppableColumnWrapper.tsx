@@ -19,7 +19,7 @@ const DroppableColumnWrapper: React.FC<Props> = ({ id, children }) => {
   return (
     <div
       ref={setNodeRef}
-      className={`flex h-full w-72 shrink-0 flex-col rounded-xl p-2 transition-colors md:w-auto md:min-w-64 md:flex-1 ${
+      className={`flex h-full w-[min(18rem,80vw)] shrink-0 flex-col rounded-xl p-2 transition-colors md:w-auto md:min-w-64 md:flex-1 ${
         isOver ? "bg-brand-50 ring-2 ring-inset ring-brand-300" : "bg-slate-100"
       }`}
     >
