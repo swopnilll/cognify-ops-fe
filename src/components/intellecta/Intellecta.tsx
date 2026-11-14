@@ -1,9 +1,22 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import { History } from "lucide-react";
 
-import ConversationSidebar, { Conversation, Message } from "./ConversationSidebar";
+import ConversationSidebar, { Message } from "./ConversationSidebar";
 import ChatLayout from "./ChatLayout";
 import Button from "../ui/Button";
+import Spinner from "../ui/Spinner";
+import {
+  addConversationMessages,
+  createConversation,
+  deleteConversation,
+  fetchConversationMessages,
+  fetchConversations,
+  NewMessage,
+  renameConversation,
+  StoredMessage,
+} from "../../services/conversationService";
 import {
   AI_ENABLED,
   getContextBasedResponse,
@@ -24,53 +37,103 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // From lg up the history sits beside the chat; below that it is a drawer.
 const isWideScreen = () => window.matchMedia("(min-width: 1024px)").matches;
 
-const Intellecta = () => {
+const conversationsQueryKey = (projectId: number) => ["conversations", projectId] as const;
+
+const toNewMessage = (message: Message): NewMessage => ({
+  sender: message.sender,
+  text: message.text,
+  is_error: message.isError ?? false,
+  is_paused: message.isPaused ?? false,
+});
+
+const toMessage = (stored: StoredMessage): Message => ({
+  sender: stored.sender,
+  text: stored.text,
+  timestamp: stored.created_at,
+  isError: stored.is_error,
+  isPaused: stored.is_paused,
+});
+
+interface Props {
+  projectId: number;
+}
+
+// The chat with Intellecta. Every finished question and answer is saved on
+// the server, so the history is still there after a refresh or on another
+// device. The history belongs to the signed-in user and this project.
+const Intellecta = ({ projectId }: Props) => {
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(isWideScreen);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
 
-  // Identifies the reply being typed out. Starting another chat, or leaving
-  // the page, changes it so a reply still in progress stops.
-  const replyRun = useRef(0);
+  const conversationsQuery = useQuery({
+    queryKey: conversationsQueryKey(projectId),
+    queryFn: () => fetchConversations(projectId),
+  });
+  const refreshConversations = () =>
+    queryClient.invalidateQueries({ queryKey: conversationsQueryKey(projectId) });
+
+  // The conversation on screen, readable from a reply that is still running.
+  const selectedIdRef = useRef<number | null>(null);
+  const selectConversation = (id: number | null) => {
+    selectedIdRef.current = id;
+    setSelectedConversationId(id);
+  };
+
+  // Identifies the chat on screen. Opening another chat, or leaving the page,
+  // changes it, so a reply still in progress stops updating the screen.
+  const chatSession = useRef(0);
   useEffect(
     () => () => {
-      replyRun.current += 1;
+      chatSession.current += 1;
     },
     []
   );
 
-  // Adds a finished question/answer pair to the current conversation, or
-  // starts a new conversation if there is none.
-  const saveExchange = (userMessage: Message, botMessage: Message) => {
-    if (selectedConversationId) {
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === selectedConversationId
-            ? { ...conv, messages: [...conv.messages, userMessage, botMessage] }
-            : conv
-        )
-      );
-      return;
+  // Saves a finished question/answer pair: added to the conversation it was
+  // asked in, or stored as a new conversation.
+  const saveExchange = async (
+    userMessage: Message,
+    botMessage: Message,
+    conversationId: number | null,
+    session: number
+  ) => {
+    const exchange = [toNewMessage(userMessage), toNewMessage(botMessage)];
+
+    try {
+      if (conversationId !== null) {
+        await addConversationMessages(conversationId, exchange);
+      } else {
+        const created = await createConversation(projectId, exchange);
+        // Follow-up questions go to the new conversation, unless the user
+        // has opened a different chat in the meantime.
+        if (chatSession.current === session) selectConversation(created.conversation_id);
+      }
+      refreshConversations();
+    } catch {
+      toast.error("This chat could not be saved. It will be gone when you leave the page.");
     }
-
-    const date = new Date().toDateString();
-    const id = `${date}-${Date.now()}`;
-    setConversations((prev) => [...prev, { id, date, messages: [userMessage, botMessage] }]);
-    setSelectedConversationId(id);
-  };
-
-  // Replaces the bot message being streamed, or appends it if this is the first chunk.
-  const upsertBotMessage = (botMessage: Message) => {
-    setMessages((prev) => {
-      const last = prev[prev.length - 1];
-      return last?.sender === "bot" ? [...prev.slice(0, -1), botMessage] : [...prev, botMessage];
-    });
   };
 
   const handleSend = async (text: string, useProjectKnowledge: boolean) => {
     if (!text.trim() || isThinking) return;
+
+    const session = chatSession.current;
+    const conversationId = selectedIdRef.current;
+    const isCurrent = () => chatSession.current === session;
+    // Screen updates of a chat the user has left are dropped.
+    const show = (update: (previous: Message[]) => Message[]) => {
+      if (isCurrent()) setMessages(update);
+    };
+    // Replaces the bot message being streamed, or appends it if this is the first chunk.
+    const upsertBotMessage = (botMessage: Message) =>
+      show((prev) => {
+        const last = prev[prev.length - 1];
+        return last?.sender === "bot" ? [...prev.slice(0, -1), botMessage] : [...prev, botMessage];
+      });
 
     const timestamp = new Date().toISOString();
     const userMessage: Message = { sender: "user", text, timestamp };
@@ -82,26 +145,30 @@ const Intellecta = () => {
     try {
       if (!AI_ENABLED) {
         // No API call: type the fixed reply out word by word, like a streamed answer.
-        const run = ++replyRun.current;
         await sleep(900);
 
         let typed = "";
         for (const word of PAUSED_TEXT.match(/\S+\s*/g) ?? []) {
-          if (replyRun.current !== run) return;
+          if (!isCurrent()) return;
           typed += word;
           upsertBotMessage({ sender: "bot", text: typed, timestamp, isPaused: true });
           // Pause a little longer at the end of a sentence or paragraph.
           await sleep(/[.:,]\s*$/.test(word) ? 170 : 25 + Math.random() * 45);
         }
 
-        if (replyRun.current !== run) return;
-        saveExchange(userMessage, { sender: "bot", text: PAUSED_TEXT, timestamp, isPaused: true });
+        if (!isCurrent()) return;
+        await saveExchange(
+          userMessage,
+          { sender: "bot", text: PAUSED_TEXT, timestamp, isPaused: true },
+          conversationId,
+          session
+        );
       } else if (useProjectKnowledge) {
         // Answer grounded in the project knowledge base (returned in one piece).
         const response = await getContextBasedResponse(text);
         const botMessage: Message = { sender: "bot", text: response, timestamp };
-        setMessages((prev) => [...prev, botMessage]);
-        saveExchange(userMessage, botMessage);
+        show((prev) => [...prev, botMessage]);
+        await saveExchange(userMessage, botMessage, conversationId, session);
       } else {
         // General answer, streamed in as it is generated.
         let botReply = "";
@@ -121,30 +188,73 @@ const Intellecta = () => {
 
         if (failed || !botReply) {
           upsertBotMessage(errorMessage);
+          await saveExchange(userMessage, errorMessage, conversationId, session);
         } else {
-          saveExchange(userMessage, { sender: "bot", text: botReply, timestamp });
+          await saveExchange(
+            userMessage,
+            { sender: "bot", text: botReply, timestamp },
+            conversationId,
+            session
+          );
         }
       }
     } catch {
-      setMessages((prev) => [...prev, errorMessage]);
+      show((prev) => [...prev, errorMessage]);
+      await saveExchange(userMessage, errorMessage, conversationId, session);
     } finally {
-      setIsThinking(false);
+      if (isCurrent()) setIsThinking(false);
     }
   };
 
-  const handleSelectConversation = (id: string) => {
-    replyRun.current += 1; // stop a reply that is still being typed
+  const handleNewChat = () => {
+    chatSession.current += 1; // stop a reply that is still being typed
+    setIsThinking(false);
+    setIsLoadingMessages(false);
+    if (!isWideScreen()) setIsSidebarOpen(false);
+    setMessages([]);
+    selectConversation(null);
+  };
+
+  const handleSelectConversation = async (id: number) => {
+    const session = ++chatSession.current; // stop a reply that is still being typed
     setIsThinking(false);
     if (!isWideScreen()) setIsSidebarOpen(false);
-    if (id === "new") {
-      setMessages([]);
-      setSelectedConversationId(null);
-      return;
+    selectConversation(id);
+    setMessages([]);
+    setIsLoadingMessages(true);
+
+    try {
+      const stored = await fetchConversationMessages(id);
+      if (chatSession.current !== session) return;
+      setMessages(stored.map(toMessage));
+    } catch {
+      if (chatSession.current !== session) return;
+      toast.error("This chat could not be opened. Please try again.");
+      selectConversation(null);
+    } finally {
+      if (chatSession.current === session) setIsLoadingMessages(false);
     }
-    const selected = conversations.find((c) => c.id === id);
-    if (selected) {
-      setMessages(selected.messages);
-      setSelectedConversationId(id);
+  };
+
+  const handleRename = async (id: number, title: string) => {
+    try {
+      await renameConversation(id, title);
+      await refreshConversations();
+    } catch (error) {
+      toast.error("The chat could not be renamed. Please try again.");
+      throw error;
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteConversation(id);
+      if (selectedIdRef.current === id) handleNewChat();
+      await refreshConversations();
+      toast.success("Chat deleted");
+    } catch (error) {
+      toast.error("The chat could not be deleted. Please try again.");
+      throw error;
     }
   };
 
@@ -163,14 +273,23 @@ const Intellecta = () => {
             </Button>
           </div>
         )}
-        <ChatLayout messages={messages} isThinking={isThinking} onSend={handleSend} />
+        {isLoadingMessages ? (
+          <Spinner className="h-full" />
+        ) : (
+          <ChatLayout messages={messages} isThinking={isThinking} onSend={handleSend} />
+        )}
       </div>
 
       <ConversationSidebar
         isOpen={isSidebarOpen}
-        conversations={conversations}
+        conversations={conversationsQuery.data ?? []}
+        isLoading={conversationsQuery.isLoading}
+        isError={conversationsQuery.isError}
         selectedId={selectedConversationId}
         onSelect={handleSelectConversation}
+        onNew={handleNewChat}
+        onRename={handleRename}
+        onDelete={handleDelete}
         onToggle={() => setIsSidebarOpen((prev) => !prev)}
       />
     </section>

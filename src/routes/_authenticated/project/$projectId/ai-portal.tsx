@@ -8,7 +8,8 @@ export const Route = createFileRoute(
 })
 
 function RouteComponent() {
-  return (
-    <Intellecta />
-  )
+  const { projectId } = Route.useParams()
+
+  // Keyed by project: switching projects starts with that project's chats.
+  return <Intellecta key={projectId} projectId={Number(projectId)} />
 }
