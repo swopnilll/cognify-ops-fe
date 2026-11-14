@@ -8,6 +8,7 @@ export type Message = {
   text: string;
   timestamp: string;
   isError?: boolean;
+  isPaused?: boolean;
 };
 
 export type Conversation = {

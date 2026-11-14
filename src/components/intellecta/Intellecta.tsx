@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { History } from "lucide-react";
 
 import ConversationSidebar, { Conversation, Message } from "./ConversationSidebar";
 import ChatLayout from "./ChatLayout";
 import Button from "../ui/Button";
 import {
+  AI_ENABLED,
   getContextBasedResponse,
   streamOpenAIResponse,
 } from "../../services/intellectaService";
 
 const ERROR_TEXT =
   "Sorry, I couldn’t get an answer. The AI service may be unavailable. Please try again.";
+
+const PAUSED_TEXT = `Sorry, I can’t answer that right now.
+
+Intellecta’s AI is switched off on this public demo. Every answer costs tokens, and an AI that anyone on the internet can reach is easy to abuse, so it is staying off for now.
+
+The rest of Cognify Ops works as normal: you can still create projects, add tasks and move them across the board.`;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // From lg up the history sits beside the chat; below that it is a drawer.
 const isWideScreen = () => window.matchMedia("(min-width: 1024px)").matches;
@@ -21,6 +30,16 @@ const Intellecta = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(isWideScreen);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+
+  // Identifies the reply being typed out. Starting another chat, or leaving
+  // the page, changes it so a reply still in progress stops.
+  const replyRun = useRef(0);
+  useEffect(
+    () => () => {
+      replyRun.current += 1;
+    },
+    []
+  );
 
   // Adds a finished question/answer pair to the current conversation, or
   // starts a new conversation if there is none.
@@ -61,7 +80,23 @@ const Intellecta = () => {
     setIsThinking(true);
 
     try {
-      if (useProjectKnowledge) {
+      if (!AI_ENABLED) {
+        // No API call: type the fixed reply out word by word, like a streamed answer.
+        const run = ++replyRun.current;
+        await sleep(900);
+
+        let typed = "";
+        for (const word of PAUSED_TEXT.match(/\S+\s*/g) ?? []) {
+          if (replyRun.current !== run) return;
+          typed += word;
+          upsertBotMessage({ sender: "bot", text: typed, timestamp, isPaused: true });
+          // Pause a little longer at the end of a sentence or paragraph.
+          await sleep(/[.:,]\s*$/.test(word) ? 170 : 25 + Math.random() * 45);
+        }
+
+        if (replyRun.current !== run) return;
+        saveExchange(userMessage, { sender: "bot", text: PAUSED_TEXT, timestamp, isPaused: true });
+      } else if (useProjectKnowledge) {
         // Answer grounded in the project knowledge base (returned in one piece).
         const response = await getContextBasedResponse(text);
         const botMessage: Message = { sender: "bot", text: response, timestamp };
@@ -98,6 +133,8 @@ const Intellecta = () => {
   };
 
   const handleSelectConversation = (id: string) => {
+    replyRun.current += 1; // stop a reply that is still being typed
+    setIsThinking(false);
     if (!isWideScreen()) setIsSidebarOpen(false);
     if (id === "new") {
       setMessages([]);

@@ -5,6 +5,7 @@ import ChatBubble from "./ChatBubble";
 import ChatInput from "./ChatInput";
 import TypingIndicator from "./TypingIndicator";
 import { Message } from "./ConversationSidebar";
+import { AI_ENABLED } from "../../services/intellectaService";
 
 type Props = {
   messages: Message[];
@@ -17,6 +18,14 @@ const suggestions = [
   "Which tasks are still open?",
   "What has been completed so far?",
 ];
+
+const PausedNote = () =>
+  AI_ENABLED ? null : (
+    <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-slate-400">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+      AI answers are paused on this demo to keep costs down.
+    </p>
+  );
 
 const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -56,6 +65,8 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
               </button>
             ))}
           </div>
+
+          <PausedNote />
         </div>
       </div>
     );
@@ -64,12 +75,22 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
   return (
     <div className="flex h-full flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 pt-14 sm:px-6 sm:pb-6 xl:pt-6">
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
           {messages.map((msg, idx) => (
-            <ChatBubble key={idx} sender={msg.sender} text={msg.text} isError={msg.isError} />
+            <ChatBubble
+              key={idx}
+              sender={msg.sender}
+              text={msg.text}
+              isError={msg.isError}
+              isPaused={msg.isPaused}
+              isStreaming={isThinking && msg.sender === "bot" && idx === messages.length - 1}
+            />
           ))}
           {isThinking && messages[messages.length - 1]?.sender === "user" && (
-            <div className="pl-10">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm">
+                <Sparkles className="h-3.5 w-3.5" />
+              </span>
               <TypingIndicator />
             </div>
           )}
@@ -77,9 +98,10 @@ const ChatLayout: React.FC<Props> = ({ messages, isThinking, onSend }) => {
         </div>
       </div>
 
-      <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+      <div className="px-4 pb-3 sm:px-6 sm:pb-4">
         <div className="mx-auto w-full max-w-2xl">
           <ChatInput onSend={onSend} disabled={isThinking} />
+          <PausedNote />
         </div>
       </div>
     </div>

@@ -1,5 +1,9 @@
 import { fetchWithAuth } from "./fetchWithAuth";
 
+// The AI is off unless the app is built with VITE_AI_ENABLED=true. While it is
+// off, Intellecta makes no API calls and replies with a fixed message.
+export const AI_ENABLED = import.meta.env.VITE_AI_ENABLED === "true";
+
 interface StreamMessage {
   type: "message" | "final" | "end" | "error";
   data?: string;
