@@ -1,41 +1,26 @@
 import React, { useState } from "react";
-import Modal from "./ui/Modal";
-import { Status } from "../types/kanban";
-import CognifySelect from "./ui/CognifySelect";
-import CognifyInput from "./ui/CognifyInput";
-import CognifyButton from "./ui/CognigyButton";
 
-interface User {
-  user_metadata: any;
-  user_id: any;
-  id: number;
-  name: string;
-}
+import { ProjectUser } from "../types/kanban";
+import { displayNameOf } from "../hooks/useProjectTickets";
+import { KanbanStatus } from "../services/statusService";
+import { CreateTicketPayload } from "../services/ticketService";
+import Button from "./ui/Button";
+import Modal from "./ui/Modal";
+import Select from "./ui/Select";
+import TextField from "./ui/TextField";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (payload: {
-    ticketData: {
-      name: string;
-      description: string;
-      project_id: number;
-      created_by: string;
-      status_id: number;
-    };
-    userId: string;
-  }) => void;
-  users?: User[];
-  statusOptions?: any;
-  projectId: number; 
+  onCreate: (payload: CreateTicketPayload) => Promise<unknown>;
+  users: ProjectUser[];
+  statusOptions: KanbanStatus[];
+  projectId: number;
   currentUserId: string;
-
 }
 
 interface FormErrors {
   title?: string;
-  description?: string;
-  status?: string;
   assigneeId?: string;
 }
 
@@ -43,62 +28,43 @@ const CreateTaskModal: React.FC<Props> = ({
   isOpen,
   onClose,
   onCreate,
-  users = [],
-  statusOptions = [],
+  users,
+  statusOptions,
   projectId,
-  currentUserId
+  currentUserId,
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<Status>(2);
-  const [assigneeId, setAssigneeId] = useState<string>("");
+  const [statusId, setStatusId] = useState<number | "">("");
+  const [assigneeId, setAssigneeId] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Reset form on close
-  const resetForm = () => {
+  // Defaults: the first column, and yourself if you are a member.
+  const effectiveStatusId: number | undefined =
+    statusId === "" ? statusOptions[0]?.status_id : statusId;
+  const effectiveAssigneeId =
+    assigneeId || (users.some((user) => user.user_id === currentUserId) ? currentUserId : "");
+
+  const close = () => {
     setTitle("");
     setDescription("");
-    setStatus(2);
+    setStatusId("");
     setAssigneeId("");
     setFormErrors({});
     setApiError("");
+    onClose();
   };
 
-  // Validate the form and return any error messages
-  const validateForm = () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
     const errors: FormErrors = {};
-
-    // Validate title
-    if (!title.trim()) {
-      errors.title = "Title is required.";
-    }
-
-    // Validate description
-    if (!description.trim()) {
-      errors.description = "Description is required.";
-    }
-
-    // Validate status
-    if (!status) {
-      errors.status = "Status is required.";
-    }
-
-    // Validate assignee
-    if (!assigneeId.trim()) {
-      errors.assigneeId = "Assignee is required.";
-    }
-
-    return errors;
-  };
-
-  const handleSubmit = async () => {
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+    if (!title.trim()) errors.title = "Enter a title";
+    if (!effectiveAssigneeId) errors.assigneeId = "Choose who this is assigned to";
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0 || effectiveStatusId === undefined) return;
 
     setLoading(true);
     setApiError("");
@@ -106,121 +72,89 @@ const CreateTaskModal: React.FC<Props> = ({
     try {
       await onCreate({
         ticketData: {
-          name: title,
-          description,
+          name: title.trim(),
+          description: description.trim(),
           project_id: projectId,
           created_by: currentUserId,
-          status_id: Number(status),
+          status_id: effectiveStatusId,
         },
-        userId: assigneeId,
+        userId: effectiveAssigneeId,
       });
-      resetForm();
-      onClose();
-    } catch (err) {
-      setApiError("Something went wrong. Please try again.");
+      close();
+    } catch {
+      setApiError("The task could not be created. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Clear the relevant form error when input changes
-  const handleInputChange =
-    (
-      setter: React.Dispatch<React.SetStateAction<any>>,
-      field: keyof FormErrors
-    ) =>
-    (value: string) => {
-      setter(value);
-      setFormErrors((prev) => ({
-        ...prev,
-        [field]: "", // Clear the error for this field when the user starts typing
-      }));
-    };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create New Task">
-      <section className="flex flex-col gap-6 mt-12 mb-10 px-2 sm:px-4">
-        <CognifyInput
+    <Modal isOpen={isOpen} onClose={close} title="New task">
+      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <TextField
           label="Title"
-          placeholder="Task title"
+          placeholder="What needs to be done?"
+          autoFocus
           value={title}
-          onChange={handleInputChange(setTitle, "title")}
-          required
+          onChange={(value) => {
+            setTitle(value);
+            setFormErrors((prev) => ({ ...prev, title: undefined }));
+          }}
           error={formErrors.title}
+          required
         />
 
-        <CognifyInput
+        <TextField
           label="Description"
-          placeholder="Task description"
+          placeholder="Add details, links or acceptance criteria"
           value={description}
-          onChange={handleInputChange(setDescription, "description")}
+          onChange={setDescription}
           multiline
           rows={4}
-          required
-          error={formErrors.description}
         />
 
-        <CognifySelect
-          label="Status"
-          value={status}
-          onChange={(val) => {
-            setStatus(Number(val) as Status);
-            setFormErrors((prev) => ({
-              ...prev,
-              status: "",
-            }));
-          }}
-          options={statusOptions.map((status: any) => ({
-            label: status.name,
-            value: status.status_id,
-          }))}
-          required
-          error={formErrors.status}
-        />
-
-        <CognifySelect
-          label="Assignee"
-          value={assigneeId}
-          onChange={(val) => {
-            setAssigneeId(val);
-            setFormErrors((prev) => ({
-              ...prev,
-              assigneeId: "",
-            }));
-          }}
-          options={users.map((user) => ({
-            label: user.user_metadata.fullName,
-            value: user.user_id,
-          }))}
-          required
-          error={formErrors.assigneeId}
-        />
-
-        {apiError && (
-          <p className="text-sm text-red-600 font-medium -mt-2">{apiError}</p>
-        )}
-
-        <div className="flex justify-end gap-4 mt-4">
-          <CognifyButton
-            label="Cancel"
-            customColor="primary"
-            variant="outlined"
-            textColor="black"
-            onClick={() => {
-              resetForm();
-              onClose();
-            }}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Select
+            label="Status"
+            value={effectiveStatusId ?? ""}
+            onChange={(value) => setStatusId(Number(value))}
+            options={statusOptions.map((status) => ({
+              label: status.name,
+              value: status.status_id,
+            }))}
           />
 
-          <CognifyButton
-            label={loading ? "Creating..." : "Create Task"}
-            customColor="blue"
-            textColor="white"
-            onClick={handleSubmit}
-            disabled={loading}
+          <Select
+            label="Assignee"
+            value={effectiveAssigneeId}
+            onChange={(value) => {
+              setAssigneeId(value);
+              setFormErrors((prev) => ({ ...prev, assigneeId: undefined }));
+            }}
+            options={users.map((user) => ({
+              label: displayNameOf(user),
+              value: user.user_id,
+            }))}
+            placeholder="Choose a member"
+            error={formErrors.assigneeId}
           />
         </div>
-      </section>
+
+        {apiError && (
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {apiError}
+          </p>
+        )}
+
+        <div className="mt-2 flex justify-end gap-2">
+          <Button variant="secondary" onClick={close}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={loading}>
+            Create task
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 };

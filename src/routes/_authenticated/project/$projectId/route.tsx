@@ -1,143 +1,81 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import * as React from "react";
+import { ChevronLeft, ChevronRight, Kanban, List, Settings, Sparkles } from "lucide-react";
+
+import { useProject } from "../../../../hooks/useProject";
 
 export const Route = createFileRoute("/_authenticated/project/$projectId")({
   component: ProjectLayout,
 });
 
+const navItems = [
+  { to: "/project/$projectId/kanbanView", label: "Board", icon: Kanban, exact: false },
+  { to: "/project/$projectId", label: "List", icon: List, exact: true },
+  { to: "/project/$projectId/ai-portal", label: "Intellecta", icon: Sparkles, exact: false },
+  { to: "/project/$projectId/settings", label: "Settings", icon: Settings, exact: false },
+] as const;
+
 function ProjectLayout(): React.JSX.Element {
   const { projectId } = Route.useParams();
-  const [isNavCollapsed, setIsNavCollapsed] = React.useState(false);
-
-  const [project, setProject] = React.useState({
-    name: "Cognify Ops",
-    description: "Software Project",
-  });
-
-  // TODO: Remove This
-  React.useEffect(() => {
-    setProject({
-      name: "Cognify Ops",
-      description: "Software Project",
-    });
-  }, []);
+  const { project } = useProject(Number(projectId));
+  const [collapsed, setCollapsed] = React.useState(false);
 
   return (
-    <div className="relative flex h-[calc(100vh-100px)]">
-      {/* Sidebar */}
-      <div
-        className={`transition-all duration-300 bg-white border-r border-t border-gray-300 overflow-hidden p-4 ${
-          isNavCollapsed ? "w-[10px]" : "w-[400px]"
+    <div className="flex h-[calc(100vh-3.5rem)]">
+      <aside
+        className={`flex shrink-0 flex-col border-r border-slate-200 bg-white transition-[width] duration-200 ${
+          collapsed ? "w-16" : "w-60"
         }`}
       >
-        {!isNavCollapsed && (
-          <>
-            <div className="flex gap-2 mt-4">
-              <img
-                src="/images/project-icon.png"
-                alt="Project Icon"
-                className="w-8"
-              />
-              <div>
-                <p className="text-sm">{project.name}</p>
-                <p className="text-xs">{project.description}</p>
-              </div>
+        <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-3">
+          <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-lg bg-brand-50 px-1.5 text-xs font-bold tracking-wide text-brand-700">
+            {project?.project_key ?? "…"}
+          </span>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-900">
+                {project?.name ?? "Project"}
+              </p>
+              <p className="text-xs text-slate-500">Project</p>
             </div>
-            <nav className="mt-18 flex flex-col gap-4">
-              <h2 className="text-lg text-[#5B6274] font-bold mb-6">
-                PLANNING
-              </h2>
+          )}
+        </div>
 
-              <Link
-                to="/project/$projectId/kanbanView"
-                params={{ projectId }}
-                preload="intent"
-                activeProps={{
-                  className: "bg-[#F2F7FF] font-bold text-blue-600",
-                }}
-                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
-              >
-                <img
-                  src="/images/kanban-board-icon.png"
-                  alt="Board Icon"
-                  className="w-8 h-8"
-                />
-                <p className="text-center">Board</p>
-              </Link>
+        <nav className="flex flex-1 flex-col gap-1 p-3">
+          {navItems.map(({ to, label, icon: Icon, exact }) => (
+            <Link
+              key={to}
+              to={to}
+              params={{ projectId }}
+              activeOptions={{ exact }}
+              title={collapsed ? label : undefined}
+              className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 ${
+                collapsed ? "justify-center" : ""
+              }`}
+              activeProps={{ className: "!bg-brand-50 !text-brand-700" }}
+            >
+              <Icon className="h-[18px] w-[18px] shrink-0" />
+              {!collapsed && label}
+            </Link>
+          ))}
+        </nav>
 
-              <Link
-                to="/project/$projectId"
-                params={{ projectId }}
-                preload="intent"
-                activeProps={{
-                  className: "bg-[#F2F7FF] font-bold text-blue-600",
-                }}
-                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
-              >
-                <img
-                  src="/images/list-icon.png"
-                  alt="Board Icon"
-                  className="w-8 h-8"
-                />
-                <p className="text-center">List</p>
-              </Link>
+        <div className="border-t border-slate-100 p-3">
+          <button
+            type="button"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`flex h-9 w-full items-center gap-3 rounded-lg px-3 text-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 ${
+              collapsed ? "justify-center" : ""
+            }`}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {!collapsed && "Collapse"}
+          </button>
+        </div>
+      </aside>
 
-              <div className="mt-16 mb-8">
-                <hr />
-              </div>
-
-              <Link
-                to="/project/$projectId/ai-portal"
-                params={{ projectId }}
-                preload="intent"
-                activeProps={{
-                  className: "bg-[#F2F7FF] font-bold text-blue-600",
-                }}
-                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
-              >
-                <img
-                  src="/images/intellecta-logo.png"
-                  alt="Ai Logo Icon"
-                  className="w-8 h-8"
-                />
-                <p className="text-center">Intellecta</p>
-              </Link>
-
-              <Link
-                to="/project/$projectId/settings"
-                params={{ projectId }}
-                preload="intent"
-                activeProps={{
-                  className: "bg-[#F2F7FF] font-bold text-blue-600",
-                }}
-                className="hover:underline flex gap-2 items-center rounded-lg p-2 transition"
-              >
-                <img
-                  src="/images/Setting.png"
-                  alt="Settings Icon"
-                  className="w-8"
-                />
-                <p className="text-center">Settings</p>
-              </Link>
-            </nav>
-          </>
-        )}
-      </div>
-
-      {/* Toggle Button - pulled out of sidebar and into main flex container */}
-      <button
-        onClick={() => setIsNavCollapsed(!isNavCollapsed)}
-        className="absolute top-4 left-[calc(200px-0.75rem)] z-20 flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white shadow-md transition-all duration-300"
-        style={{
-          left: isNavCollapsed ? "30px" : "400px",
-          transform: "translateX(-50%)",
-        }}
-      >
-        {isNavCollapsed ? "›" : "‹"}
-      </button>
-
-      {/* Right Content Panel */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-w-0 flex-1 overflow-y-auto">
         <Outlet />
       </div>
     </div>

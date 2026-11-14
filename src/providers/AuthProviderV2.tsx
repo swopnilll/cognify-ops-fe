@@ -15,6 +15,7 @@ import { getUserDetails } from "../axios/tokenCRUD";
 interface User {
   id: string;
   email: string;
+  name?: string;
   nickname: string;
   picture: string;
 }
@@ -137,7 +138,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Render children only after initial loading is complete
   // Or show a global loading indicator
   if (authState.isLoading) {
-    return <div>Loading Application...</div>; // Or a proper loading spinner component
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-brand-600" />
+      </div>
+    );
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

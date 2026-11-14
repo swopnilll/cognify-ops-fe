@@ -28,7 +28,8 @@ export const login = async ({ email, password }: LoginParams) => {
     setUserDetails({
       id: response.data.user.sub,
       email: response.data.user.email,
-      nickname: response.data.user.nickname,
+      name: response.data.user.name,
+        nickname: response.data.user.nickname,
       picture: response.data.user.picture,
     });
 
@@ -37,6 +38,7 @@ export const login = async ({ email, password }: LoginParams) => {
       user: {
         id: response.data.user.sub,
         email: response.data.user.email,
+        name: response.data.user.name,
         nickname: response.data.user.nickname,
         picture: response.data.user.picture,
       }

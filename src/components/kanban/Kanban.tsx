@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -10,100 +10,50 @@ import {
   KeyboardSensor,
   closestCenter,
 } from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"; // <-- Needed for KeyboardSensor
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { Plus } from "lucide-react";
 
-// --- Types ---
 import { Task } from "../../types/kanban";
-import { KanbanStatus } from "../../services/statusService";
-
-// --- Components ---
 import Column from "./Column";
 import CreateTaskModal from "../CreateTasksModal";
 import DroppableColumnWrapper from "./DroppableColumnWrapper";
-import CognifyButton from "../ui/CognigyButton";
+import PageHeader from "../project/PageHeader";
+import Button from "../ui/Button";
 import SearchBox from "../ui/SearchBox";
+import Spinner from "../ui/Spinner";
 import AvatarGroup from "../ui/AvatarGroup";
-import TaskCard from "../TaskCard"; // <-- Ensure TaskCard is imported
+import TaskCard from "../TaskCard";
 
-// --- Services ---
-import { fetchAllStatuses } from "../../services/statusService";
-import { fetchUsersForProect } from "../../services/projectService";
 import {
   createTicket,
-  // CreateTicketPayload,
-  fetchTicketsByProjectId,
+  CreateTicketPayload,
+  ProjectTicket,
   updateTicketStatus,
 } from "../../services/ticketService";
-
-// --- Hooks ---
 import { useAuth } from "../../hooks/useAuthV2";
-import { ClipLoader } from "react-spinners";
-
-// --- Helper Functions ---
-const getColorClass = (name: string) => {
-  const key = name.toLowerCase();
-  if (key.includes("todo")) return "bg-blue-600";
-  if (key.includes("progress")) return "bg-amber-700";
-  if (key.includes("done")) return "bg-green-700";
-  return "bg-gray-400";
-};
-
-interface TicketApiResponse {
-  ticket_id: number;
-  name: string;
-  description?: string;
-  status_id: number;
-  Ticket_Assignment?: Array<{ user_id: string }>;
-}
-
-const mapApiTicketToTask = (ticket: TicketApiResponse): Task => ({
-  id: ticket.ticket_id,
-  title: ticket.name,
-  description: ticket.description,
-  status: ticket.status_id,
-  assignee: ticket.Ticket_Assignment?.[0]?.user_id || "Unassigned",
-});
+import {
+  displayNameOf,
+  ticketsQueryKey,
+  useProjectTickets,
+} from "../../hooks/useProjectTickets";
 
 interface KanbanBoardProps {
   projectId: number;
 }
 
-// --- Component ---
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const { user: authUser } = useAuth();
   const queryClient = useQueryClient();
+  const { project, tasks, statuses, projectUsers, isLoading, isError } =
+    useProjectTickets(projectId);
 
   const [search, setSearch] = useState("");
+  const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
-  // const [activeId, setActiveId] = useState<number | string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
-  // --- Data Fetching ---
-  const { data: rawTickets } = useQuery<TicketApiResponse[]>({
-    queryKey: ["tickets", projectId],
-    queryFn: ({ queryKey }) => fetchTicketsByProjectId(queryKey[1] as number),
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const tasks: Task[] = useMemo(() => {
-    return rawTickets?.map(mapApiTicketToTask) || [];
-  }, [rawTickets]);
-
-  const { data: statusOptions, isLoading: isLoadingStatuses } = useQuery<
-    KanbanStatus[]
-  >({
-    queryKey: ["statuses"],
-    queryFn: fetchAllStatuses,
-  });
-
-  const { data: projectUsers, isLoading: isLoadingProjectUsers } = useQuery({
-    queryKey: ["projectUsers", projectId],
-    queryFn: ({ queryKey }) => fetchUsersForProect(queryKey[1] as number),
-  });
-
-  // --- Sensors ---
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -117,276 +67,156 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const createTicketMutation = useMutation({
     mutationFn: createTicket,
     onSuccess: () => {
-      toast.success("Ticket Created successfully");
-      queryClient.invalidateQueries({ queryKey: ["tickets", projectId] });
-    },
-    onError: (error: any) => {
-      console.error("Error while creating ticket:", error);
-      toast.error(error?.message || "Cannot Create Ticket");
+      toast.success("Task created");
+      queryClient.invalidateQueries({ queryKey: ticketsQueryKey(projectId) });
     },
   });
 
   const updateTicketStatusMutation = useMutation({
-    mutationFn: ({
-      ticketId,
-      statusId,
-    }: {
-      ticketId: number;
-      statusId: number;
-    }) => updateTicketStatus(ticketId, statusId),
-    onMutate: async (variables) => {
-      const { ticketId, statusId } = variables;
-      const queryKey = ["tickets", projectId];
+    mutationFn: ({ ticketId, statusId }: { ticketId: number; statusId: number }) =>
+      updateTicketStatus(ticketId, statusId),
+    // Move the card immediately, then roll back if the request fails.
+    onMutate: async ({ ticketId, statusId }) => {
+      const queryKey = ticketsQueryKey(projectId);
       await queryClient.cancelQueries({ queryKey });
-      const previousTickets =
-        queryClient.getQueryData<TicketApiResponse[]>(queryKey);
+      const previousTickets = queryClient.getQueryData<ProjectTicket[]>(queryKey);
       if (previousTickets) {
-        const updatedTickets = previousTickets.map((ticket) =>
-          ticket.ticket_id === ticketId
-            ? { ...ticket, status_id: statusId }
-            : ticket
+        queryClient.setQueryData<ProjectTicket[]>(
+          queryKey,
+          previousTickets.map((ticket) =>
+            ticket.ticket_id === ticketId ? { ...ticket, status_id: statusId } : ticket
+          )
         );
-        queryClient.setQueryData<TicketApiResponse[]>(queryKey, updatedTickets);
       }
-      console.log(
-        `Optimistic UI update: Task ${ticketId} moved to status ${statusId}`
-      );
       return { previousTickets };
     },
-    onError: (error: any, _, context) => {
-      console.error("Error updating ticket status:", error);
-      toast.error(
-        `Failed to move task: ${error?.message || "Unknown error"}. Reverting.`
-      );
+    onError: (_error, _variables, context) => {
+      toast.error("The task could not be moved. It has been put back.");
       if (context?.previousTickets) {
-        queryClient.setQueryData(
-          ["tickets", projectId],
-          context.previousTickets
-        );
+        queryClient.setQueryData(ticketsQueryKey(projectId), context.previousTickets);
       }
     },
     onSettled: () => {
-      console.log("Mutation settled. Invalidating tickets query...");
-      queryClient.invalidateQueries({ queryKey: ["tickets", projectId] });
+      queryClient.invalidateQueries({ queryKey: ticketsQueryKey(projectId) });
     },
   });
 
-  // --- Event Handlers ---
-
+  // --- Drag and drop ---
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      // --- Enhanced Logging ---
-      console.log("--- DragStart Event (Full Active) ---", event.active);
-      console.log("--- DragStart Event (Active Data) ---", event.active.data);
-      // ------------------------
-
-      const { active } = event;
-      const id = active.id as number; // Task ID
-      // setActiveId(id);
-      const currentActiveTask = tasks.find((task) => task.id === id);
-      setActiveTask(currentActiveTask || null);
-
-      // --- Access data via .current ---
-      console.log(
-        // Make sure template literal interpolation is correct
-        `Drag Start: ID=${id}, Type=${active.data?.current?.type}` // <-- Access .current.type
-      );
-      // ---------------------------------
+      setActiveTask(tasks.find((task) => task.id === event.active.id) || null);
     },
     [tasks]
   );
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      // setActiveId(null);
       setActiveTask(null);
 
       const { active, over } = event;
+      if (!over) return;
 
-      if (!over) {
-        console.log("Drag ended outside a droppable area.");
-        return;
-      }
+      const droppedOnColumn =
+        active.data?.current?.type === "task" && over.data?.current?.type === "column";
+      if (!droppedOnColumn) return;
 
-      const activeId = active.id;
-      const activeType = active.data?.current?.type; // Type from useDraggable data
-      const overId = over.id;
-      const overType = over.data?.current?.type; // Type from useDroppable data
+      const taskId = Number(active.id);
+      const targetStatusId = Number(over.id);
       const originalStatusId = active.data?.current?.originalStatusId;
 
-      console.log("DragEnd Event Details:", {
-        activeId,
-        activeType,
-        overId,
-        overType,
-        originalStatusId,
-      });
-
-      // --- Simplified Logic Focus ---
-
-      // Primary Goal: Did we drop a TASK onto a COLUMN?
-      if (activeType === "task" && overType === "column") {
-        const taskId = Number(activeId);
-        const targetStatusId = Number(overId);
-        const currentTask = tasks.find((t) => t.id === taskId);
-
-        console.log(
-          `Checking drop: Task ${taskId} (from status ${originalStatusId}) onto Column ${targetStatusId}`
-        );
-
-        // Only mutate if the status ID is actually different
-        if (currentTask && targetStatusId !== originalStatusId) {
-          console.log(
-            `Attempting to move task ${taskId} from status ${originalStatusId} to COLUMN ${targetStatusId}`
-          );
-          updateTicketStatusMutation.mutate({
-            ticketId: taskId,
-            statusId: targetStatusId,
-          });
-        } else if (currentTask) {
-          console.log(
-            `Task ${taskId} dropped in the same status column (${targetStatusId}) or target matches original. No mutation needed.`
-          );
-        } else {
-          console.warn(
-            `Could not find task with ID ${taskId} for status update.`
-          );
-        }
-      }
-      // Handle other cases (like dropping on self if ID/Type matched, though less likely now)
-      else if (activeId === overId && activeType === overType) {
-        console.log(
-          `Dropped on self (ID: ${activeId}, Type: ${activeType}). No action needed.`
-        );
-      } else {
-        // Log if the types didn't match what we expected
-        console.log(
-          `Unhandled drop or type mismatch: Active ${activeType} (${activeId}) onto Over ${overType} (${overId}). No action.`
-        );
+      if (targetStatusId !== originalStatusId && tasks.some((t) => t.id === taskId)) {
+        updateTicketStatusMutation.mutate({ ticketId: taskId, statusId: targetStatusId });
       }
     },
-    [tasks, updateTicketStatusMutation] // Dependencies
+    [tasks, updateTicketStatusMutation]
   );
 
-  const handleDragCancel = useCallback(() => {
-    // setActiveId(null);
-    setActiveTask(null);
-    console.log("Drag Cancelled");
-  }, []);
+  const handleCreateTask = (payload: CreateTicketPayload) =>
+    createTicketMutation.mutateAsync(payload);
 
-  const handleCreateTask = (taskPayload: any) => {
-    createTicketMutation.mutate(taskPayload);
-    setModalOpen(false);
-  };
+  // --- Filtering ---
+  const searchTerm = search.trim().toLowerCase();
+  const visibleTasks = tasks.filter(
+    (task) =>
+      (assigneeFilter === null || task.assignee === assigneeFilter) &&
+      (searchTerm === "" ||
+        task.title.toLowerCase().includes(searchTerm) ||
+        task.description?.toLowerCase().includes(searchTerm))
+  );
 
-  const handleUserSelect = (user: any) => {
-    if (user) {
-      /* ... TODO ... */
-    } else {
-      /* ... */
-    }
-  };
+  if (isLoading) return <Spinner className="h-full" />;
 
-  // --- Render Logic ---
-  if (isLoadingStatuses || isLoadingProjectUsers) {
+  if (isError) {
     return (
-      <div className="relative w-full h-full">
-        <ClipLoader className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      <div className="p-6">
+        <p className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
+          The board could not be loaded. Refresh the page to try again.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="relative p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4 px-2">
-        <h2 className="text-md">Project / Health Pro</h2>
-        <CognifyButton
-          label="Create New Task"
-          variant="outlined"
-          customColor="blue"
-          textColor="white"
-          onClick={() => setModalOpen(true)}
-          sx={{ marginRight: "1rem", opacity: 0.7 }}
+    <div className="flex h-full flex-col p-6">
+      <PageHeader
+        projectName={project?.name}
+        title="Board"
+        actions={
+          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setModalOpen(true)}>
+            New task
+          </Button>
+        }
+      />
+
+      <div className="mb-5 flex flex-wrap items-center gap-4">
+        <SearchBox value={search} onChange={setSearch} placeholder="Search tasks" />
+        <AvatarGroup
+          avatars={projectUsers.map((user) => ({
+            id: user.user_id,
+            src: user.picture || undefined,
+            name: displayNameOf(user),
+          }))}
+          selectedId={assigneeFilter}
+          onSelect={setAssigneeFilter}
         />
-      </div>
-      <h2 className="text-xl font-bold mb-4 px-2">Board</h2>
-
-      {/* Filters/Controls */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-4 px-2">
-        <div className="mr-2">
-          <SearchBox value={search} onChange={setSearch} />
-        </div>
-        <div>
-          <AvatarGroup
-            avatars={
-              projectUsers?.map(
-                (user: {
-                  user_id: string;
-                  picture: string;
-                  user_metadata: { fullName: string };
-                }) => {
-                  return {
-                    id: user.user_id,
-                    src: user.picture,
-                    name: user.user_metadata.fullName,
-                  };
-                }
-              ) || []
-            }
-            onSelect={handleUserSelect}
-          />
-        </div>
+        {assigneeFilter && (
+          <button
+            type="button"
+            onClick={() => setAssigneeFilter(null)}
+            className="text-sm font-medium text-brand-600 hover:text-brand-700"
+          >
+            Clear filter
+          </button>
+        )}
       </div>
 
-      {/* Kanban Board Area */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
+        onDragCancel={() => setActiveTask(null)}
       >
-        <div className="w-full flex flex-col md:flex-row gap-4 px-2">
-          {statusOptions?.map((status) => (
-            <DroppableColumnWrapper
-              key={status.status_id}
-              id={status.status_id}
-            >
+        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto pb-2">
+          {statuses.map((status) => (
+            <DroppableColumnWrapper key={status.status_id} id={status.status_id}>
               <Column
-                status={status.status_id}
-                color={getColorClass(status.name)}
                 title={status.name}
-                // *** FIX THE FILTER PREDICATE HERE ***
-                tasks={
-                  tasks?.filter(
-                    (t) =>
-                      t.status === status.status_id && // Filter by column status
-                      (search === "" || // Filter by search term
-                        t.title.toLowerCase().includes(search.toLowerCase()) ||
-                        (t.description && // Check if description exists before calling includes
-                          t.description
-                            .toLowerCase()
-                            .includes(search.toLowerCase())))
-                  ) || []
-                }
+                tasks={visibleTasks.filter((task) => task.status === status.status_id)}
               />
             </DroppableColumnWrapper>
           ))}
         </div>
 
-        <DragOverlay>
-          {activeTask ? <TaskCard task={activeTask} /> : null}
-        </DragOverlay>
+        <DragOverlay>{activeTask ? <TaskCard task={activeTask} overlay /> : null}</DragOverlay>
       </DndContext>
 
-      {/* Create Task Modal */}
       <CreateTaskModal
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         onCreate={handleCreateTask}
         users={projectUsers}
-        statusOptions={statusOptions}
+        statusOptions={statuses}
         projectId={projectId}
         currentUserId={authUser?.id || ""}
       />
@@ -395,4 +225,3 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
 };
 
 export default KanbanBoard;
-

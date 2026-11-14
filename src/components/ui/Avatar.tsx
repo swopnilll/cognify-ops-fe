@@ -1,40 +1,62 @@
 import React from "react";
-import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 interface AvatarProps {
+  name?: string;
   src?: string;
-  alt?: string;
-  size?: number; // pixel size
-  title?: string;
-  className?: string; // optional styling override
+  size?: number; // pixels
+  className?: string;
 }
 
-const Avatar: React.FC<AvatarProps> = ({
-  src,
-  alt = "User Avatar",
-  size = 32,
-  title = "",
-  className = "",
-}) => {
+const palette = [
+  "bg-brand-100 text-brand-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-amber-100 text-amber-700",
+  "bg-violet-100 text-violet-700",
+  "bg-rose-100 text-rose-700",
+  "bg-cyan-100 text-cyan-700",
+];
+
+const initialsOf = (name: string) =>
+  name
+    .trim()
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]!.toUpperCase())
+    .join("") || "?";
+
+// Same name always gets the same colour.
+const colourOf = (name: string) => {
+  let hash = 0;
+  for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  return palette[hash % palette.length];
+};
+
+const Avatar: React.FC<AvatarProps> = ({ name = "", src, size = 32, className = "" }) => {
+  const style = { width: size, height: size, fontSize: Math.max(10, Math.round(size * 0.38)) };
+
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        title={name}
+        style={style}
+        className={`shrink-0 rounded-full object-cover ${className}`}
+      />
+    );
+  }
+
   return (
-    <div
-      title={title}
-      className={`rounded-full overflow-hidden bg-gray-100 border border-gray-300 flex items-center justify-center shadow-sm ${className}`}
-      style={{ width: size, height: size }}
+    <span
+      title={name}
+      style={style}
+      className={`inline-flex shrink-0 select-none items-center justify-center rounded-full font-semibold ${
+        name ? colourOf(name) : "bg-slate-100 text-slate-400"
+      } ${className}`}
     >
-      {src ? (
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <UserCircleIcon
-          className="text-gray-400"
-          style={{ width: size * 0.8, height: size * 0.8 }}
-        />
-      )}
-    </div>
+      {initialsOf(name)}
+    </span>
   );
 };
 

@@ -1,9 +1,13 @@
 import React from "react";
+import { Plus, X } from "lucide-react";
+
+import Button from "../ui/Button";
 
 export type Message = {
   sender: "user" | "bot";
   text: string;
   timestamp: string;
+  isError?: boolean;
 };
 
 export type Conversation = {
@@ -27,58 +31,62 @@ const ConversationSidebar: React.FC<Props> = ({
   onSelect,
   onToggle,
 }) => {
+  if (!isOpen) return null;
+
   return (
-    <div
-      className={`transition-all duration-300 ease-in-out h-full ${
-        isOpen ? "w-64" : "w-0"
-      } bg-white shadow-md border-l border-gray-200 overflow-hidden`}
-    >
-      {isOpen && (
-        <div className="flex flex-col h-fit">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 border-b">
-            <p className="font-semibold text-lg">Chats</p>
-            <button
-              onClick={onToggle}
-              className="text-blue-600 text-sm hover:underline"
-            >
-              Hide
-            </button>
-          </div>
+    <aside className="flex w-64 shrink-0 flex-col border-l border-slate-200 bg-white">
+      <div className="flex h-14 items-center justify-between border-b border-slate-100 px-4">
+        <p className="text-sm font-semibold text-slate-900">History</p>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label="Hide history"
+          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
 
-          {/* New Chat Button */}
-          <div className="p-4 border-b">
-            <button
-              onClick={() => onSelect("new")}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
-            >
-              + New Chat
-            </button>
-          </div>
+      <div className="p-3">
+        <Button
+          variant="secondary"
+          fullWidth
+          icon={<Plus className="h-4 w-4" />}
+          onClick={() => onSelect("new")}
+        >
+          New chat
+        </Button>
+      </div>
 
-          {/* List of conversations */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {conversations.length === 0 ? (
-              <p className="text-gray-500 text-sm italic">No conversations yet.</p>
-            ) : (
-              conversations.map((conv) => (
-                <div
-                  key={conv.id}
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+        {conversations.length === 0 ? (
+          <p className="px-1 py-2 text-sm text-slate-400">
+            Your chats from this session will appear here.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {[...conversations].reverse().map((conv) => (
+              <li key={conv.id}>
+                <button
+                  type="button"
                   onClick={() => onSelect(conv.id)}
-                  className={`cursor-pointer truncate p-2 rounded hover:bg-blue-100 ${
+                  className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${
                     selectedId === conv.id
-                      ? "bg-blue-100 text-blue-600 font-semibold"
-                      : "text-gray-800"
+                      ? "bg-brand-50 text-brand-700"
+                      : "text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  {conv.date}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+                  <p className="truncate text-sm font-medium">
+                    {conv.messages[0]?.text ?? "New chat"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-400">{conv.date}</p>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </aside>
   );
 };
 

@@ -1,30 +1,28 @@
-// src/components/kanban/DroppableColumnWrapper.tsx
 import { useDroppable } from "@dnd-kit/core";
 import React from "react";
 
 interface Props {
-  id: number; // Column's status_id
+  id: number; // the column's status_id
   children: React.ReactNode;
 }
 
 const DroppableColumnWrapper: React.FC<Props> = ({ id, children }) => {
   const { setNodeRef, isOver } = useDroppable({
-    id: id, // Unique ID for the droppable column
-    data: { // Data associated with the droppable column
+    id,
+    data: {
       type: "column",
-      statusId: id, // Pass the status if needed in handlers
-      accepts: ["task"], // Explicitly accept 'task' type draggables
+      statusId: id,
+      accepts: ["task"],
     },
   });
 
-  // Optional visual feedback
-  const style: React.CSSProperties = isOver
-    ? { outline: "3px dashed green", outlineOffset: "-2px" }
-    : { outline: "3px dashed transparent", outlineOffset: "-2px"}; // Add transparent outline for layout consistency
-
   return (
-    // Ensure this div correctly wraps the Column and receives the ref
-    <div ref={setNodeRef} className="flex-1 min-w-[250px]" style={style}>
+    <div
+      ref={setNodeRef}
+      className={`flex h-full w-72 shrink-0 flex-col rounded-xl p-2 transition-colors md:w-auto md:min-w-64 md:flex-1 ${
+        isOver ? "bg-brand-50 ring-2 ring-inset ring-brand-300" : "bg-slate-100"
+      }`}
+    >
       {children}
     </div>
   );

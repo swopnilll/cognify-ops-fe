@@ -1,50 +1,36 @@
-// src/components/kanban/Column.tsx
 import React from "react";
-// REMOVE: import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Task } from "../../types/kanban"; // Adjust path
-import TaskCard from "../TaskCard"; // Adjust path
+
+import { Task } from "../../types/kanban";
+import { getStatusStyle } from "../../utils/statusStyle";
+import TaskCard from "../TaskCard";
 
 interface Props {
   title: string;
-  color: string; // This seems unused, using getHeaderStyles instead
-  status?: number; // Pass the actual status ID
   tasks: Task[];
 }
 
-// Color mapping (using title)
-const getHeaderStyles = (name: string) => {
-  const key = name.toLowerCase();
-  // ... (getHeaderStyles remains the same) ...
-    if (key.includes("todo")) return { bg: "bg-blue-100", text: "text-blue-900", border: "border-l-4 border-blue-500" };
-    if (key.includes("progress")) return { bg: "bg-orange-100", text: "text-orange-900", border: "border-l-4 border-orange-500" };
-    if (key.includes("done")) return { bg: "bg-green-100", text: "text-green-900", border: "border-l-4 border-green-500" };
-    return { bg: "bg-gray-100", text: "text-gray-900", border: "border-l-4 border-gray-400" };
-};
+const Column: React.FC<Props> = ({ title, tasks }) => {
+  const style = getStatusStyle(title);
 
-
-const Column: React.FC<Props> = ({ title, tasks }) => { // Receive status ID if needed
-  const headerStyle = getHeaderStyles(title);
   return (
-    <div className="flex-1 min-w-[250px] rounded-2xl p-3 h-[calc(100vh-350px)] bg-white/60 backdrop-blur-lg shadow-md ring-1 ring-gray-200 border border-white/20 flex flex-col">
-      {/* Modern Header */}
-      <div
-        className={`px-4 py-2 rounded-t-lg mb-2 font-semibold tracking-wide ${headerStyle.bg} ${headerStyle.text} ${headerStyle.border}`}
-      >
-        <h3 className="text-sm uppercase">{title} ({tasks.length})</h3> {/* Added count */}
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 px-2 pb-3 pt-1">
+        <span className={`h-2 w-2 rounded-full ${style.dot}`} />
+        <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
+        <span className="rounded-full bg-slate-200/70 px-2 py-0.5 text-xs font-medium text-slate-600">
+          {tasks.length}
+        </span>
       </div>
 
-      {/* Tasks List - Remove SortableContext */}
-      <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         {tasks.length > 0 ? (
-          tasks.map((task) => (
-             // TaskCard is now just draggable, not sortable
-            <TaskCard key={task.id} task={task} />
-          ))
+          tasks.map((task) => <TaskCard key={task.id} task={task} />)
         ) : (
-          <p className="text-center text-gray-500 italic pt-4">No tasks</p>
+          <p className="rounded-lg border border-dashed border-slate-300 px-3 py-6 text-center text-xs text-slate-400">
+            No tasks
+          </p>
         )}
       </div>
-      {/* End Tasks List */}
     </div>
   );
 };

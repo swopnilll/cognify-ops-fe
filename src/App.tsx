@@ -3,7 +3,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 
 import { ToastContainer } from "react-toastify";
-import GlobalLoader from "./components/ui/GlobalLoader";
 
 import queryClient from "./queryClient";
 
@@ -19,9 +18,8 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <AppProviders />
-        <GlobalLoader />
-        <ToastContainer />
-        <ReactQueryDevtools initialIsOpen={true} />  {/* Ensure this is inside QueryClientProvider */}
+        <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar />
+        <ReactQueryDevtools initialIsOpen={false} />  {/* Ensure this is inside QueryClientProvider */}
       </QueryClientProvider>
     </AuthProvider>
   );

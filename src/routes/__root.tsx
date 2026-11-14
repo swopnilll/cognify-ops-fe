@@ -1,30 +1,26 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
 
-
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import Header from "../components/Header";
-
-import type { AuthContextValue } from "../providers/AuthProviderV2"; // Import the context type
-import type { QueryClient } from "@tanstack/react-query"; // Import QueryClient type
+import type { AuthContextValue } from "../providers/AuthProviderV2";
 
 interface RouterContext {
   auth: AuthContextValue;
   queryClient: QueryClient;
 }
 
-
+// The header is 3.5rem (h-14) tall; pages below it fill the rest of the screen.
 const RootComponent = () => {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
+      <main className="flex min-h-0 flex-1 flex-col">
+        <Outlet />
+      </main>
+    </div>
   );
-}
+};
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  component: RootComponent, 
+  component: RootComponent,
 });
-
-

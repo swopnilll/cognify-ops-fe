@@ -1,9 +1,8 @@
 const TypingIndicator = () => (
-  <div className="flex items-center gap-2 px-4 py-2">
-    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
-    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-150" />
-    <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce delay-300" />
-    <span className="text-gray-400 ml-2">Intellecta is typing...</span>
+  <div className="flex items-center gap-1.5 px-1 py-2" aria-label="Intellecta is thinking">
+    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+    <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
   </div>
 );
 

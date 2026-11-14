@@ -1,63 +1,54 @@
-// components/ui/AvatarGroup.tsx
-import React, { useState } from "react";
-import clsx from "clsx";
+import React from "react";
+import Avatar from "./Avatar";
 
-interface Avatar {
-  id: number;
+export interface AvatarItem {
+  id: string;
   src?: string;
   name?: string;
 }
 
 interface AvatarGroupProps {
-  avatars: Avatar[];
+  avatars: AvatarItem[];
+  selectedId: string | null;
+  onSelect: (id: string | null) => void; // null when deselected
   maxVisible?: number;
-  onSelect?: (user: Avatar | null) => void; // null if deselected
 }
 
+// Overlapping avatars that act as a filter: click one to select it, click
+// again to clear.
 const AvatarGroup: React.FC<AvatarGroupProps> = ({
   avatars,
-  maxVisible = 3,
+  selectedId,
   onSelect,
+  maxVisible = 5,
 }) => {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-
-  const handleClick = (avatar: Avatar) => {
-    const newSelected = selectedId === avatar.id ? null : avatar.id;
-    setSelectedId(newSelected);
-    onSelect?.(newSelected === null ? null : avatar);
-  };
-
   const visible = avatars.slice(0, maxVisible);
   const remaining = avatars.length - visible.length;
 
   return (
-    <div className="flex items-center space-x-[-8px]">
-      {visible.map((avatar) => (
-        <div
-          key={avatar.id}
-          className={clsx(
-            "w-8 h-8 rounded-full border-2 cursor-pointer shadow",
-            selectedId === avatar.id
-              ? "border-blue-500 ring-2 ring-blue-500"
-              : "border-white"
-          )}
-          onClick={() => handleClick(avatar)}
-        >
-          <img
-            src={
-              avatar.src ||
-              `https://ui-avatars.com/api/?name=${avatar.name || "?"}`
-            }
-            alt={avatar.name}
-            className="w-full h-full rounded-full object-cover"
-          />
-        </div>
-      ))}
+    <div className="flex items-center -space-x-2">
+      {visible.map((avatar) => {
+        const selected = selectedId === avatar.id;
+        return (
+          <button
+            key={avatar.id}
+            type="button"
+            aria-pressed={selected}
+            aria-label={`Filter by ${avatar.name || "user"}`}
+            onClick={() => onSelect(selected ? null : avatar.id)}
+            className={`rounded-full ring-2 transition hover:z-10 hover:-translate-y-0.5 ${
+              selected ? "z-10 ring-brand-600" : "ring-white"
+            }`}
+          >
+            <Avatar name={avatar.name} src={avatar.src} size={32} />
+          </button>
+        );
+      })}
 
       {remaining > 0 && (
-        <div className="w-8 h-8 rounded-full bg-gray-200 text-sm text-gray-600 flex items-center justify-center border-2 border-white shadow">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-600 ring-2 ring-white">
           +{remaining}
-        </div>
+        </span>
       )}
     </div>
   );

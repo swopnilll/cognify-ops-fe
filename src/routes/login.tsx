@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import ClipLoader from "react-spinners/ClipLoader";
 
-import CognigyButton from "../components/ui/CognigyButton";
-import CognifyInput from "../components/ui/CognifyInput";
+import AuthCard from "../components/AuthCard";
+import Button from "../components/ui/Button";
+import TextField from "../components/ui/TextField";
 import { useAuth } from "../hooks/useAuthV2";
 import { login } from "../services/authService";
 
@@ -20,18 +20,14 @@ function LoginComponent() {
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [submitError, setSubmitError] = useState("");
 
-  const {
-    mutate,
-    isPending,
-  } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: login,
-    onSuccess: (data) => {
-      setErrors({ email: "", password: "" });
-      auth.signIn(data);
+    onSuccess: async (data) => {
+      await auth.signIn(data);
       navigate({ to: "/projects", replace: true });
     },
     onError: (error: any) => {
-      setSubmitError(error?.response?.data?.error || "Login failed");
+      setSubmitError(error?.response?.data?.error || "Login failed. Please try again.");
     },
   });
 
@@ -41,43 +37,46 @@ function LoginComponent() {
     setSubmitError("");
   };
 
-  const validateForm = () => {
+  const handleSubmit = () => {
     const newErrors = {
       email: /\S+@\S+\.\S+/.test(form.email) ? "" : "Enter a valid email",
-      password: form.password.length >= 6 ? "" : "Min 6 characters",
+      password: form.password ? "" : "Enter your password",
     };
-
     setErrors(newErrors);
-    return !Object.values(newErrors).some(Boolean);
-  };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
+    if (!Object.values(newErrors).some(Boolean)) {
       mutate({ email: form.email, password: form.password });
     }
   };
 
   return (
-    <section className="max-w-lg mx-auto mt-10 bg-white p-10 shadow-md rounded-xl flex flex-col gap-6 lg:w-1/2">
-      <header>
-        <p className="text-sm text-gray-500">Welcome Back</p>
-        <h1 className="text-2xl font-semibold text-black mt-1">
-          Login to Your Account
-        </h1>
-      </header>
-
-      <CognifyInput
+    <AuthCard
+      title="Welcome back"
+      subtitle="Log in to your Cognify Ops account"
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          Don’t have an account?{" "}
+          <Link to="/signup" className="font-medium text-brand-600 hover:text-brand-700">
+            Sign up
+          </Link>
+        </>
+      }
+    >
+      <TextField
         label="Email"
         type="email"
+        autoComplete="email"
+        autoFocus
         value={form.email}
         onChange={(val) => handleChange("email", val)}
         error={errors.email}
         required
       />
-
-      <CognifyInput
+      <TextField
         label="Password"
         type="password"
+        autoComplete="current-password"
         value={form.password}
         onChange={(val) => handleChange("password", val)}
         error={errors.password}
@@ -85,32 +84,14 @@ function LoginComponent() {
       />
 
       {submitError && (
-        <p className="text-red-500 text-sm text-center">{submitError}</p>
-      )}
-
-      {isPending ? (
-        <div className="flex justify-center items-center py-2">
-          <ClipLoader color="#3b82f6" size={32} />
-        </div>
-      ) : (
-        <CognigyButton
-          label="Login"
-          variant="outlined"
-          customColor="blue"
-          textColor="white"
-          onClick={handleSubmit}
-          size="large"
-        />
-      )}
-
-      <footer className="flex justify-center items-center">
-        <p className="text-sm text-gray-500">
-          Don’t have an account?{" "}
-          <Link to="/signup" className="text-blue-500">
-            Sign Up
-          </Link>
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {submitError}
         </p>
-      </footer>
-    </section>
+      )}
+
+      <Button type="submit" size="lg" fullWidth loading={isPending} className="mt-1">
+        Log in
+      </Button>
+    </AuthCard>
   );
 }

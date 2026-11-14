@@ -1,14 +1,12 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
+
 import { createProject } from "../../services/projectService";
 import { useAuth } from "../../hooks/useAuthV2";
-import { toast } from "react-toastify";
-import ClipLoader from "react-spinners/ClipLoader";
-
-import CognifyInput from "../ui/CognifyInput";
-import CognifyButton from "../ui/CognigyButton";
+import Button from "../ui/Button";
+import Modal from "../ui/Modal";
+import TextField from "../ui/TextField";
 
 interface Props {
   open: boolean;
@@ -16,116 +14,123 @@ interface Props {
   onProjectCreated: () => void;
 }
 
+// "Website Redesign" -> "WR", "Billing" -> "BILL"
+const suggestKey = (name: string) => {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  const letters =
+    words.length > 1 ? words.map((word) => word[0]).join("") : (words[0] ?? "").slice(0, 4);
+  return letters.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 5);
+};
+
 const CreateProjectModal: React.FC<Props> = ({ open, onOpenChange, onProjectCreated }) => {
   const { user: authUser } = useAuth();
 
   const [name, setName] = useState("");
   const [key, setKey] = useState("");
-
+  const [keyEdited, setKeyEdited] = useState(false);
+  const [description, setDescription] = useState("");
   const [errors, setErrors] = useState<{ name?: string; key?: string }>({});
+  const [submitError, setSubmitError] = useState("");
 
-  const [loading, setLoading] = useState(false); // New loading state
+  const close = () => {
+    setName("");
+    setKey("");
+    setKeyEdited(false);
+    setDescription("");
+    setErrors({});
+    setSubmitError("");
+    onOpenChange(false);
+  };
 
   const mutation = useMutation({
     mutationFn: createProject,
-    onMutate: () => setLoading(true), // Set loading state to true when mutation starts
-    onSuccess: (data) => {
-      console.log("Project created successfully:", data);
-      toast.success("Project created successfully!");
-      setLoading(false); // Set loading to false after success
-      onOpenChange(false);
+    onSuccess: () => {
+      toast.success("Project created");
+      close();
       onProjectCreated();
     },
-    onError: (error: any) => {
-      console.error("Error creating project:", error);
-      setLoading(false); // Set loading to false after error
+    onError: () => {
+      setSubmitError("The project could not be created. Please try again.");
     },
   });
 
-  const handleSubmit = () => {
-    const validationErrors: { name?: string; key?: string } = {};
-    if (!name.trim()) validationErrors.name = "Project name is required";
-    if (!key.trim()) validationErrors.key = "Project key is required";
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
+    const validationErrors: { name?: string; key?: string } = {};
+    if (!name.trim()) validationErrors.name = "Enter a project name";
+    if (!key.trim()) validationErrors.key = "Enter a project key";
     setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length === 0) {
-      if (authUser) {
-        mutation.mutate({
-          userId: authUser.id,
-          name,
-          project_key: key,
-        });
-      } else {
-        console.error("User is not authenticated");
-      }
+    if (Object.keys(validationErrors).length === 0 && authUser) {
+      mutation.mutate({
+        userId: authUser.id,
+        name: name.trim(),
+        project_key: key.trim(),
+        description: description.trim(),
+      });
     }
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-        <Dialog.Content className="fixed top-[25%] left-[25%] w-[50vw] h-[50vh] bg-white shadow-2xl rounded-lg z-50 flex flex-col p-6 overflow-auto">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-2xl font-bold">Create Project</Dialog.Title>
-            <Dialog.Close asChild>
-              <button>
-                <X className="w-6 h-6" />
-              </button>
-            </Dialog.Close>
-          </div>
+    <Modal
+      isOpen={open}
+      onClose={close}
+      title="New project"
+      description="A project holds a board of tasks and its own knowledge base."
+    >
+      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <TextField
+          label="Name"
+          placeholder="Website redesign"
+          autoFocus
+          value={name}
+          onChange={(value) => {
+            setName(value);
+            setErrors((prev) => ({ ...prev, name: undefined }));
+            if (!keyEdited) setKey(suggestKey(value));
+          }}
+          error={errors.name}
+          required
+        />
+        <TextField
+          label="Key"
+          placeholder="WR"
+          value={key}
+          onChange={(value) => {
+            setKey(value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8));
+            setKeyEdited(true);
+            setErrors((prev) => ({ ...prev, key: undefined }));
+          }}
+          error={errors.key}
+          hint="A short prefix for task numbers, for example WR-12"
+          required
+        />
+        <TextField
+          label="Description"
+          placeholder="What is this project for?"
+          value={description}
+          onChange={setDescription}
+          multiline
+          rows={3}
+        />
 
-          <p className="text-gray-600 mb-6">
-            Discover the potential of seamless collaboration with your team.
+        {submitError && (
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {submitError}
           </p>
+        )}
 
-          <div className="flex flex-1 gap-6">
-            <div className="flex flex-col gap-4 w-2/3 justify-center items-center">
-              <CognifyInput
-                label="Name of the project"
-                value={name}
-                onChange={setName}
-                required
-                error={errors.name}
-              />
-              <CognifyInput
-                label="Key"
-                value={key}
-                onChange={setKey}
-                required
-                error={errors.key} // Fixed key error display
-              />
-            </div>
-
-            <div className="flex flex-col items-center justify-center w-1/3">
-              <img
-                src="images/kanban-template.svg"
-                alt="Kanban Template"
-                className="max-w-full h-auto"
-              />
-              <p className="mt-4 font-semibold text-center">Kanban Template</p>
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-end">
-            <CognifyButton
-              variant="outlined"
-              customColor="#1868DB"
-              textColor="white"
-              label="Create Project"
-              onClick={handleSubmit}
-              disabled={loading} 
-            />
-            {loading && (
-              <div className="ml-4">
-                <ClipLoader size={24} color="#1868DB" />
-              </div>
-            )}
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        <div className="mt-2 flex justify-end gap-2">
+          <Button variant="secondary" onClick={close}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={mutation.isPending}>
+            Create project
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 

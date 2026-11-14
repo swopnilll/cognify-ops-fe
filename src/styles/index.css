@@ -1,1 +1,35 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Brand blue, built around the logo colour (#1868DB) */
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe8fe;
+  --color-brand-200: #bfd5fd;
+  --color-brand-300: #93b8fb;
+  --color-brand-400: #6094f6;
+  --color-brand-500: #3b76ee;
+  --color-brand-600: #1868db;
+  --color-brand-700: #1554b4;
+  --color-brand-800: #164791;
+  --color-brand-900: #173d76;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-slate-50);
+    color: var(--color-slate-900);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

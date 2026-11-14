@@ -1,51 +1,47 @@
-// components/ui/Modal.tsx
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  Transition,
-  TransitionChild,
-} from "@headlessui/react";
-import { Fragment } from "react";
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@headlessui/react";
+import { X } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
+  title: string;
+  description?: string;
   children: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, description, children }) => {
   return (
-    <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={onClose}>
-        {/* Backdrop */}
-        <div className="fixed inset-0 bg-gradient-to-br from-white/40 to-sky-200/30 backdrop-blur-2xl transition-opacity" />
+    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
+      <DialogBackdrop
+        transition
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] transition-opacity duration-200 data-[closed]:opacity-0"
+      />
 
-
-        {/* Modal wrapper */}
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <TransitionChild
-            as={Fragment}
-            enter="transition ease-out duration-200"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition ease-in duration-150"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4">
+          <DialogPanel
+            transition
+            className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl transition duration-200 data-[closed]:scale-95 data-[closed]:opacity-0"
           >
-            <DialogPanel className="w-full max-w-md rounded-2xl bg-white/10 backdrop-blur-xl shadow-2xl ring-1 ring-white/20 border border-white/30 p-8 transform transition-all duration-300 scale-100 sm:scale-105">
-              {title && (
-                <DialogTitle className="text-lg font-bold text-gray-900 mb-4">
-                  {title}
-                </DialogTitle>
-              )}
-              {children}
-            </DialogPanel>
-          </TransitionChild>
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <DialogTitle className="text-lg font-semibold text-slate-900">{title}</DialogTitle>
+                {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close"
+                className="-mr-1 -mt-1 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {children}
+          </DialogPanel>
         </div>
-      </Dialog>
-    </Transition>
+      </div>
+    </Dialog>
   );
 };
 
