@@ -7,9 +7,10 @@ import TaskCard from "../TaskCard";
 interface Props {
   title: string;
   tasks: Task[];
+  onOpenTask?: (task: Task) => void;
 }
 
-const Column: React.FC<Props> = ({ title, tasks }) => {
+const Column: React.FC<Props> = ({ title, tasks, onOpenTask }) => {
   const style = getStatusStyle(title);
 
   return (
@@ -24,7 +25,7 @@ const Column: React.FC<Props> = ({ title, tasks }) => {
 
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
         {tasks.length > 0 ? (
-          tasks.map((task) => <TaskCard key={task.id} task={task} />)
+          tasks.map((task) => <TaskCard key={task.id} task={task} onOpen={onOpenTask} />)
         ) : (
           <p className="rounded-lg border border-dashed border-slate-300 px-3 py-6 text-center text-xs text-slate-400">
             No tasks

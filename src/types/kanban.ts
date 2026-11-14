@@ -1,3 +1,5 @@
+import { TicketPriority, TicketType } from "../services/ticketService";
+
 export interface Task {
   id: number;
   title: string;
@@ -7,6 +9,10 @@ export interface Task {
   assigneeName?: string;
   assigneePicture?: string;
   ticketKey?: string; // e.g. "DEMO-12"
+  priority: TicketPriority;
+  type: TicketType;
+  dueDate: string | null; // "YYYY-MM-DD"
+  isDone: boolean; // true when the task sits in a "done" status
 }
 
 export type Status = number;

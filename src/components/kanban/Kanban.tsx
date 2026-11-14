@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -18,27 +18,18 @@ import { Plus } from "lucide-react";
 
 import { Task } from "../../types/kanban";
 import Column from "./Column";
-import CreateTaskModal from "../CreateTasksModal";
+import TaskModal from "../TaskModal";
+import TaskFilters from "../TaskFilters";
 import DroppableColumnWrapper from "./DroppableColumnWrapper";
 import PageHeader from "../project/PageHeader";
 import Button from "../ui/Button";
-import SearchBox from "../ui/SearchBox";
 import Spinner from "../ui/Spinner";
-import AvatarGroup from "../ui/AvatarGroup";
 import TaskCard from "../TaskCard";
 
-import {
-  createTicket,
-  CreateTicketPayload,
-  ProjectTicket,
-  updateTicketStatus,
-} from "../../services/ticketService";
+import { ProjectTicket, updateTicketStatus } from "../../services/ticketService";
 import { useAuth } from "../../hooks/useAuthV2";
-import {
-  displayNameOf,
-  ticketsQueryKey,
-  useProjectTickets,
-} from "../../hooks/useProjectTickets";
+import { ticketsQueryKey, useProjectTickets } from "../../hooks/useProjectTickets";
+import { useTaskFilters } from "../../hooks/useTaskFilters";
 
 interface KanbanBoardProps {
   projectId: number;
@@ -47,13 +38,19 @@ interface KanbanBoardProps {
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const { user: authUser } = useAuth();
   const queryClient = useQueryClient();
-  const { project, tasks, statuses, projectUsers, isLoading, isError } =
-    useProjectTickets(projectId);
+  const filters = useTaskFilters();
+  const { project, tasks, statuses, projectUsers, isLoading, isRefreshing, isError } =
+    useProjectTickets(projectId, filters.apiFilters);
 
-  const [search, setSearch] = useState("");
-  const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null);
-  const [isModalOpen, setModalOpen] = useState(false);
+  // The modal creates a task when `task` is null and edits it otherwise.
+  const [modal, setModal] = useState<{ open: boolean; task: Task | null }>({
+    open: false,
+    task: null,
+  });
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  // Dropping a card on its own column ends with a click on the card: that
+  // click must not open the task.
+  const justDragged = useRef(false);
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -70,37 +67,27 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   );
 
   // --- Mutations ---
-  const createTicketMutation = useMutation({
-    mutationFn: createTicket,
-    onSuccess: () => {
-      toast.success("Task created");
-      queryClient.invalidateQueries({ queryKey: ticketsQueryKey(projectId) });
-    },
-  });
-
   const updateTicketStatusMutation = useMutation({
     mutationFn: ({ ticketId, statusId }: { ticketId: number; statusId: number }) =>
       updateTicketStatus(ticketId, statusId),
-    // Move the card immediately, then roll back if the request fails.
+    // Move the card immediately, then roll back if the request fails. The
+    // project's ticket lists are cached once per filter: all are updated.
     onMutate: async ({ ticketId, statusId }) => {
       const queryKey = ticketsQueryKey(projectId);
       await queryClient.cancelQueries({ queryKey });
-      const previousTickets = queryClient.getQueryData<ProjectTicket[]>(queryKey);
-      if (previousTickets) {
-        queryClient.setQueryData<ProjectTicket[]>(
-          queryKey,
-          previousTickets.map((ticket) =>
-            ticket.ticket_id === ticketId ? { ...ticket, status_id: statusId } : ticket
-          )
-        );
-      }
-      return { previousTickets };
+      const previousLists = queryClient.getQueriesData<ProjectTicket[]>({ queryKey });
+      queryClient.setQueriesData<ProjectTicket[]>({ queryKey }, (tickets) =>
+        tickets?.map((ticket) =>
+          ticket.ticket_id === ticketId ? { ...ticket, status_id: statusId } : ticket
+        )
+      );
+      return { previousLists };
     },
     onError: (_error, _variables, context) => {
       toast.error("The task could not be moved. It has been put back.");
-      if (context?.previousTickets) {
-        queryClient.setQueryData(ticketsQueryKey(projectId), context.previousTickets);
-      }
+      context?.previousLists.forEach(([key, tickets]) => {
+        queryClient.setQueryData<ProjectTicket[]>(key, tickets);
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ticketsQueryKey(projectId) });
@@ -110,6 +97,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   // --- Drag and drop ---
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
+      justDragged.current = true;
       setActiveTask(tasks.find((task) => task.id === event.active.id) || null);
     },
     [tasks]
@@ -118,6 +106,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setActiveTask(null);
+      setTimeout(() => (justDragged.current = false), 0);
 
       const { active, over } = event;
       if (!over) return;
@@ -137,18 +126,9 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
     [tasks, updateTicketStatusMutation]
   );
 
-  const handleCreateTask = (payload: CreateTicketPayload) =>
-    createTicketMutation.mutateAsync(payload);
-
-  // --- Filtering ---
-  const searchTerm = search.trim().toLowerCase();
-  const visibleTasks = tasks.filter(
-    (task) =>
-      (assigneeFilter === null || task.assignee === assigneeFilter) &&
-      (searchTerm === "" ||
-        task.title.toLowerCase().includes(searchTerm) ||
-        task.description?.toLowerCase().includes(searchTerm))
-  );
+  const openTask = useCallback((task: Task) => {
+    if (!justDragged.current) setModal({ open: true, task });
+  }, []);
 
   if (isLoading) return <Spinner className="h-full" />;
 
@@ -168,47 +148,42 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         projectName={project?.name}
         title="Board"
         actions={
-          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setModalOpen(true)}>
+          <Button icon={<Plus className="h-4 w-4" />} onClick={() => setModal({ open: true, task: null })}>
             New task
           </Button>
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-3 sm:mb-5">
-        <SearchBox value={search} onChange={setSearch} placeholder="Search tasks" />
-        <AvatarGroup
-          avatars={projectUsers.map((user) => ({
-            id: user.user_id,
-            src: user.picture || undefined,
-            name: displayNameOf(user),
-          }))}
-          selectedId={assigneeFilter}
-          onSelect={setAssigneeFilter}
-        />
-        {assigneeFilter && (
-          <button
-            type="button"
-            onClick={() => setAssigneeFilter(null)}
-            className="text-sm font-medium text-brand-600 hover:text-brand-700"
-          >
-            Clear filter
-          </button>
-        )}
-      </div>
+      <TaskFilters
+        state={filters.state}
+        onChange={filters.set}
+        onClear={filters.clear}
+        isFiltered={filters.isFiltered}
+        users={projectUsers}
+      />
 
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveTask(null)}
+        onDragCancel={() => {
+          setActiveTask(null);
+          setTimeout(() => (justDragged.current = false), 0);
+        }}
       >
-        <div className="-mx-4 flex min-h-80 flex-1 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0">
+        <div
+          aria-busy={isRefreshing}
+          className={`-mx-4 flex min-h-80 flex-1 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0 ${
+            isRefreshing ? "opacity-60" : ""
+          }`}
+        >
           {statuses.map((status) => (
             <DroppableColumnWrapper key={status.status_id} id={status.status_id}>
               <Column
                 title={status.name}
-                tasks={visibleTasks.filter((task) => task.status === status.status_id)}
+                tasks={tasks.filter((task) => task.status === status.status_id)}
+                onOpenTask={openTask}
               />
             </DroppableColumnWrapper>
           ))}
@@ -217,10 +192,10 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ projectId }) => {
         <DragOverlay>{activeTask ? <TaskCard task={activeTask} overlay /> : null}</DragOverlay>
       </DndContext>
 
-      <CreateTaskModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreate={handleCreateTask}
+      <TaskModal
+        isOpen={modal.open}
+        onClose={() => setModal((current) => ({ ...current, open: false }))}
+        task={modal.task}
         users={projectUsers}
         statusOptions={statuses}
         projectId={projectId}

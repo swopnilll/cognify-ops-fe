@@ -3,13 +3,15 @@ import { useDraggable } from "@dnd-kit/core";
 
 import { Task } from "../types/kanban";
 import Avatar from "./ui/Avatar";
+import { DueDate, PriorityBadge, TypeIcon } from "./TaskBadges";
 
 interface Props {
   task: Task;
   overlay?: boolean; // true for the copy that follows the cursor while dragging
+  onOpen?: (task: Task) => void; // called on a click (not on a drag)
 }
 
-const TaskCard: React.FC<Props> = ({ task, overlay = false }) => {
+const TaskCard: React.FC<Props> = ({ task, overlay = false, onOpen }) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: task.id,
     data: {
@@ -25,6 +27,7 @@ const TaskCard: React.FC<Props> = ({ task, overlay = false }) => {
       ref={overlay ? undefined : setNodeRef}
       {...(overlay ? {} : attributes)}
       {...(overlay ? {} : listeners)}
+      onClick={overlay || !onOpen ? undefined : () => onOpen(task)}
       className={`touch-manipulation select-none rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition [-webkit-touch-callout:none] ${
         overlay
           ? "rotate-2 cursor-grabbing shadow-lg ring-1 ring-brand-300"
@@ -38,8 +41,16 @@ const TaskCard: React.FC<Props> = ({ task, overlay = false }) => {
         </p>
       )}
 
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <PriorityBadge priority={task.priority} />
+        {task.dueDate && <DueDate day={task.dueDate} isDone={task.isDone} />}
+      </div>
+
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs font-medium text-slate-400">{task.ticketKey}</span>
+        <span className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
+          <TypeIcon type={task.type} />
+          {task.ticketKey}
+        </span>
         <Avatar name={task.assigneeName} src={task.assigneePicture} size={24} />
       </div>
     </div>
